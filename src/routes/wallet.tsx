@@ -230,8 +230,9 @@ function WalletPage() {
           })}
         </div>
       </div>
+    </div>
 
-      {/* SHEETS */}
+      {/* SHEETS — outside animated wrapper so position:fixed escapes its transform */}
       {sheet && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center" onClick={() => setSheet(null)}>
           <div className="absolute inset-0 bg-black/40 animate-fade-up" />
@@ -268,7 +269,7 @@ function WalletPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
