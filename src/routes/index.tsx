@@ -123,7 +123,7 @@ function HomePage() {
       .filter(Boolean)
       .map((word) => typoAliases[word] ?? word)
       .filter(Boolean);
-    return [normalized, expandedWords.join(" ")].filter(Boolean).join(" ");
+    return expandedWords.join(" ") || normalized;
   };
   // parse budget: "under 30", "below 25", "30 jds", "<= 20", "for 30"
   const budgetMatch = q.match(/(?:under|below|less than|<=?|for|at|max)\s*(\d+)|(\d+)\s*(?:jod|jds|jd|dinar)/);
@@ -142,8 +142,12 @@ function HomePage() {
             .replace(/\b(for|under|below|less than|at|max|jod|jds|jd|dinar|dinars|near me)\b/g, " "),
         );
         if (!stripped) return budget !== null ? true : isFun;
+        const searchTokens = stripped.split(" ").filter(Boolean);
         return [s.name_en, s.name_ar ?? "", s.pro_name, s.category ?? "", s.subcategory ?? ""]
-          .some((v) => expandSearchText(v).includes(stripped));
+          .some((v) => {
+            const value = expandSearchText(v);
+            return searchTokens.every((token) => value.includes(token));
+          });
       })
     : nearby.slice(0, 8);
 
