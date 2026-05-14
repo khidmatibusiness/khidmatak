@@ -39,12 +39,12 @@ interface ReviewRow {
 
 function ProProfilePage() {
   const { id } = useParams({ from: "/pro/$id" });
-  const navigate = useNavigate();
   const [service, setService] = useState<ServiceRow | null>(null);
   const [proName, setProName] = useState<string>("");
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookOpen, setBookOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
