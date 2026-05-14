@@ -106,18 +106,18 @@ function WalletPage() {
         {/* actions */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setSheet("topup")}
+            onClick={() => { haptic("light"); setSheet("topup"); }}
             className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
           >
             <span className="rounded-xl bg-primary-tint text-primary p-2"><Plus size={20} /></span>
             <span className="text-xs font-medium">{t("topUp")}</span>
           </button>
           <button
-            onClick={() => setSheet("send")}
+            onClick={() => { haptic("light"); setSheet("send"); }}
             className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
           >
             <span className="rounded-xl bg-primary-tint text-primary p-2"><Send size={20} /></span>
-            <span className="text-xs font-medium">Send by code</span>
+            <span className="text-xs font-medium">{lang === "ar" ? "إرسال بالرمز" : "Send by code"}</span>
           </button>
         </div>
 
