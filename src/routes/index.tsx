@@ -47,14 +47,6 @@ const categories = [
   { id: "beauty", label: { en: "Beauty", ar: "تجميل" }, emoji: "💆", tint: "linear-gradient(160deg, oklch(0.95 0.05 20), oklch(0.99 0.02 20))" },
 ];
 
-const nearYou = [
-  { id: "n1", name: { en: "Biolab Amman", ar: "بايولاب عمّان" }, emoji: "🧪", rating: 4.8, distance: "219 m", price: 12, tint: "oklch(0.97 0.025 158)" },
-  { id: "n2", name: { en: "Classic Barber", ar: "كلاسيك باربر" }, emoji: "💈", rating: 4.8, distance: "219 m", price: 8, tint: "oklch(0.97 0.025 158)" },
-  { id: "n3", name: { en: "Padel Republic", ar: "بادل ريبابليك" }, emoji: "🎾", rating: 4.9, distance: "1.2 km", price: 24, tint: "oklch(0.97 0.05 110)" },
-  { id: "n4", name: { en: "Glow Salon", ar: "صالون جلو" }, emoji: "💇", rating: 4.7, distance: "900 m", price: 18, tint: "oklch(0.97 0.03 20)" },
-];
-
-const nearByCacheKey = "khidmati:nearby";
 
 function HomePage() {
   const { t, lang } = useI18n();
