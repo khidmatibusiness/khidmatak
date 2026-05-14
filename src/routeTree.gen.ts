@@ -20,6 +20,7 @@ import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIdRouteImport } from './routes/pro.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as BookServiceIdRouteImport } from './routes/book.$serviceId'
 
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
@@ -76,6 +77,11 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookServiceIdRoute = BookServiceIdRouteImport.update({
+  id: '/book/$serviceId',
+  path: '/book/$serviceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
+  '/book/$serviceId': typeof BookServiceIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
+  '/book/$serviceId': typeof BookServiceIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
+  '/book/$serviceId': typeof BookServiceIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/wallet'
     | '/welcome'
+    | '/book/$serviceId'
     | '/category/$slug'
     | '/pro/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/wallet'
     | '/welcome'
+    | '/book/$serviceId'
     | '/category/$slug'
     | '/pro/$id'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/wallet'
     | '/welcome'
+    | '/book/$serviceId'
     | '/category/$slug'
     | '/pro/$id'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   WalletRoute: typeof WalletRoute
   WelcomeRoute: typeof WelcomeRoute
+  BookServiceIdRoute: typeof BookServiceIdRoute
   CategorySlugRoute: typeof CategorySlugRoute
   ProIdRoute: typeof ProIdRoute
 }
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/book/$serviceId': {
+      id: '/book/$serviceId'
+      path: '/book/$serviceId'
+      fullPath: '/book/$serviceId'
+      preLoaderRoute: typeof BookServiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   WalletRoute: WalletRoute,
   WelcomeRoute: WelcomeRoute,
+  BookServiceIdRoute: BookServiceIdRoute,
   CategorySlugRoute: CategorySlugRoute,
   ProIdRoute: ProIdRoute,
 }

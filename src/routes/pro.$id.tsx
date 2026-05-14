@@ -111,8 +111,7 @@ function ProProfilePage() {
   const isAvailable = service.is_active !== false;
 
   const handleBook = () => {
-    toast.success("Booking flow starting…");
-    navigate({ to: "/bookings" });
+    navigate({ to: "/book/$serviceId", params: { serviceId: service!.id } });
   };
 
   return (
