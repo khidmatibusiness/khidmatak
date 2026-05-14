@@ -227,5 +227,6 @@ function BookingsPage() {
         })}
       </div>
     </div>
+    </PullToRefresh>
   );
 }
