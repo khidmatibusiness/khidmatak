@@ -79,6 +79,7 @@ function WalletPage() {
   };
 
   return (
+    <>
     <div className="px-5 pt-8 space-y-5 animate-fade-up">
       <h1 className="text-2xl font-bold tracking-tight">{t("wallet")}</h1>
 
