@@ -52,6 +52,8 @@ function HomePage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
+  const [sosKind, setSosKind] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(true);
@@ -103,6 +105,15 @@ function HomePage() {
       )
     : nearby;
 
+  const sosKinds = [
+    { id: "plumber", label: "Plumber", emoji: "🔧" },
+    { id: "electrician", label: "Electrician", emoji: "⚡" },
+    { id: "locksmith", label: "Locksmith", emoji: "🔑" },
+    { id: "tow", label: "Tow / Mechanic", emoji: "🚗" },
+    { id: "ac", label: "AC Repair", emoji: "❄️" },
+    { id: "medical", label: "Medical", emoji: "🚑" },
+  ];
+
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
       {/* header */}
@@ -117,7 +128,7 @@ function HomePage() {
         </div>
         <div className="flex items-center gap-2.5 pt-1">
           <button
-            onClick={() => setSosOpen((v) => !v)}
+            onClick={() => setSosOpen(true)}
             aria-label="SOS"
             className="spring-tap relative w-12 h-12 rounded-full flex items-center justify-center text-white animate-pulse-ring"
             style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
@@ -128,31 +139,11 @@ function HomePage() {
         </div>
       </div>
 
-      {/* SOS quick-pick sheet */}
-      {sosOpen && (
-        <div className="glass-tint rounded-3xl p-4 grid grid-cols-2 gap-2 animate-fade-up">
-          {[
-            { e: "🔧", l: "Plumber" },
-            { e: "⚡", l: "Electrician" },
-            { e: "🚗", l: "Tow truck" },
-            { e: "🩹", l: "First aid" },
-          ].map((x) => (
-            <button
-              key={x.l}
-              onClick={() => { toast.success(`${x.l} dispatched — ETA 12 min`); setSosOpen(false); }}
-              className="spring-tap glass rounded-2xl p-3 text-sm font-medium flex items-center gap-2"
-            >
-              <span className="text-xl">{x.e}</span> {x.l}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* search + Ask AI */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (query.trim()) navigate({ to: "/concierge", search: { q: query.trim() } });
+          // Normal search just filters in place — already reactive
         }}
         className="glass rounded-full flex items-center gap-2 pl-5 pr-1.5 py-1.5"
       >
@@ -165,7 +156,7 @@ function HomePage() {
         />
         <button
           type="button"
-          onClick={() => navigate({ to: "/concierge", search: query.trim() ? { q: query.trim() } : {} })}
+          onClick={() => setAiOpen(true)}
           className="spring-tap shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
         >
