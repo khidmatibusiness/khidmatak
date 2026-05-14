@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { SosSheet } from "@/components/SosSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -52,7 +53,6 @@ function HomePage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
-  const [sosKind, setSosKind] = useState<string | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
@@ -105,14 +105,6 @@ function HomePage() {
       )
     : nearby;
 
-  const sosKinds = [
-    { id: "plumber", label: "Plumber", emoji: "🔧" },
-    { id: "electrician", label: "Electrician", emoji: "⚡" },
-    { id: "locksmith", label: "Locksmith", emoji: "🔑" },
-    { id: "tow", label: "Tow / Mechanic", emoji: "🚗" },
-    { id: "ac", label: "AC Repair", emoji: "❄️" },
-    { id: "medical", label: "Medical", emoji: "🚑" },
-  ];
 
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
@@ -282,64 +274,8 @@ function HomePage() {
         </button>
       </div>
 
-      {/* SOS modal */}
-      {sosOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 animate-fade-up" onClick={() => setSosOpen(false)}>
-          <div
-            className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-8 space-y-5"
-            onClick={(e) => e.stopPropagation()}
-            style={{ boxShadow: "var(--shadow-float)" }}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-white"
-                  style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
-                >
-                  <Siren size={18} />
-                </div>
-                <div>
-                  <div className="font-bold text-lg leading-tight">SOS Emergency</div>
-                </div>
-              </div>
-              <button onClick={() => setSosOpen(false)} aria-label="Close" className="text-muted-foreground p-1">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="text-sm text-muted-foreground -mt-2">
-              Broadcast to nearest verified providers. Urgency fee applies.
-            </div>
-            <div className="grid grid-cols-3 gap-2.5">
-              {sosKinds.map((k) => {
-                const active = sosKind === k.id;
-                return (
-                  <button
-                    key={k.id}
-                    onClick={() => setSosKind(k.id)}
-                    className={`spring-tap rounded-2xl p-3 flex flex-col items-center gap-1.5 border ${active ? "border-primary bg-primary-tint" : "border-border bg-white"}`}
-                    style={{ background: active ? "var(--color-primary-tint)" : undefined }}
-                  >
-                    <span className="text-2xl">{k.emoji}</span>
-                    <span className="text-xs font-semibold text-center leading-tight">{k.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <button
-              disabled={!sosKind}
-              onClick={() => {
-                if (!sosKind) return;
-                setSosOpen(false);
-                navigate({ to: "/sos/$kind", params: { kind: sosKind } });
-              }}
-              className="spring-tap w-full rounded-full py-3.5 font-semibold text-white disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
-            >
-              Send emergency request
-            </button>
-          </div>
-        </div>
-      )}
+      {/* SOS sheet (pop-out) */}
+      <SosSheet open={sosOpen} onClose={() => setSosOpen(false)} />
 
       {/* Ask AI suggestions sheet */}
       {aiOpen && (

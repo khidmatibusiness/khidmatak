@@ -20,7 +20,6 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ConciergeRouteImport } from './routes/concierge'
 import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SosKindRouteImport } from './routes/sos.$kind'
 import { Route as ProIdRouteImport } from './routes/pro.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as BookingsIdRouteImport } from './routes/bookings.$id'
@@ -82,11 +81,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SosKindRoute = SosKindRouteImport.update({
-  id: '/sos/$kind',
-  path: '/sos/$kind',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProIdRoute = ProIdRouteImport.update({
   id: '/pro/$id',
   path: '/pro/$id',
@@ -129,7 +123,6 @@ export interface FileRoutesByFullPath {
   '/bookings/$id': typeof BookingsIdRouteWithChildren
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
-  '/sos/$kind': typeof SosKindRoute
   '/bookings/$id/review': typeof BookingsIdReviewRoute
 }
 export interface FileRoutesByTo {
@@ -148,7 +141,6 @@ export interface FileRoutesByTo {
   '/bookings/$id': typeof BookingsIdRouteWithChildren
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
-  '/sos/$kind': typeof SosKindRoute
   '/bookings/$id/review': typeof BookingsIdReviewRoute
 }
 export interface FileRoutesById {
@@ -168,7 +160,6 @@ export interface FileRoutesById {
   '/bookings/$id': typeof BookingsIdRouteWithChildren
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
-  '/sos/$kind': typeof SosKindRoute
   '/bookings/$id/review': typeof BookingsIdReviewRoute
 }
 export interface FileRouteTypes {
@@ -189,7 +180,6 @@ export interface FileRouteTypes {
     | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
-    | '/sos/$kind'
     | '/bookings/$id/review'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -208,7 +198,6 @@ export interface FileRouteTypes {
     | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
-    | '/sos/$kind'
     | '/bookings/$id/review'
   id:
     | '__root__'
@@ -227,7 +216,6 @@ export interface FileRouteTypes {
     | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
-    | '/sos/$kind'
     | '/bookings/$id/review'
   fileRoutesById: FileRoutesById
 }
@@ -246,7 +234,6 @@ export interface RootRouteChildren {
   BookServiceIdRoute: typeof BookServiceIdRoute
   CategorySlugRoute: typeof CategorySlugRoute
   ProIdRoute: typeof ProIdRoute
-  SosKindRoute: typeof SosKindRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -328,13 +315,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sos/$kind': {
-      id: '/sos/$kind'
-      path: '/sos/$kind'
-      fullPath: '/sos/$kind'
-      preLoaderRoute: typeof SosKindRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/pro/$id': {
       id: '/pro/$id'
       path: '/pro/$id'
@@ -412,7 +392,6 @@ const rootRouteChildren: RootRouteChildren = {
   BookServiceIdRoute: BookServiceIdRoute,
   CategorySlugRoute: CategorySlugRoute,
   ProIdRoute: ProIdRoute,
-  SosKindRoute: SosKindRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
