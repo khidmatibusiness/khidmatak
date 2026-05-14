@@ -330,3 +330,99 @@ function SendByCodeSheet({ onDone }: { onDone: () => void }) {
     </div>
   );
 }
+
+function SplitBillSheet({ balance, onDone }: { balance: number; onDone: () => void }) {
+  const [total, setTotal] = useState("");
+  const [people, setPeople] = useState(2);
+  const [code, setCode] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const totalNum = parseFloat(total) || 0;
+  const perPerson = people > 0 ? totalNum / people : 0;
+  const myShare = perPerson;
+  const owedToMe = totalNum - myShare;
+
+  const requestShare = async () => {
+    if (!code.trim()) return toast.error("Enter a friend's wallet code");
+    if (perPerson <= 0) return toast.error("Enter a valid total");
+    setSending(true);
+    const { error } = await supabase.rpc("process_split_send", {
+      p_recipient_code: code.trim(),
+      p_amount: perPerson,
+    });
+    setSending(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Sent ${perPerson.toFixed(2)} JOD share`);
+    onDone();
+  };
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-bold text-lg">Split a bill</h3>
+      <div>
+        <div className="text-xs text-muted-foreground mb-1.5">Total bill (JOD)</div>
+        <input
+          inputMode="decimal"
+          value={total}
+          onChange={(e) => setTotal(e.target.value)}
+          placeholder="0.00"
+          className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-lg font-semibold outline-none focus:border-primary"
+        />
+      </div>
+      <div>
+        <div className="text-xs text-muted-foreground mb-1.5">Number of people</div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setPeople((p) => Math.max(2, p - 1))}
+            className="spring-tap w-10 h-10 rounded-xl bg-primary-tint text-primary font-bold"
+          >−</button>
+          <div className="flex-1 text-center font-bold text-lg">{people}</div>
+          <button
+            onClick={() => setPeople((p) => Math.min(20, p + 1))}
+            className="spring-tap w-10 h-10 rounded-xl bg-primary-tint text-primary font-bold"
+          >+</button>
+        </div>
+      </div>
+
+      <div className="rounded-2xl bg-primary-tint p-4 space-y-1.5">
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Per person</span>
+          <span className="font-bold">{perPerson.toFixed(2)} JOD</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">You owe</span>
+          <span className="font-bold">{myShare.toFixed(2)} JOD</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Owed to you</span>
+          <span className="font-bold text-primary">{owedToMe.toFixed(2)} JOD</span>
+        </div>
+      </div>
+
+      <div>
+        <div className="text-xs text-muted-foreground mb-1.5">Send your share to wallet code</div>
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="ABCD1234"
+          className="w-full rounded-2xl border border-border bg-white px-4 py-3 font-mono outline-none focus:border-primary uppercase"
+        />
+        {perPerson > balance && (
+          <div className="text-[11px] text-destructive font-semibold mt-1">
+            Your share exceeds wallet balance
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={requestShare}
+        disabled={sending || perPerson <= 0 || perPerson > balance}
+        className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2"
+        style={{ background: "var(--gradient-primary)" }}
+      >
+        {sending && <Loader2 size={16} className="animate-spin" />}
+        Send my share ({perPerson.toFixed(2)} JOD)
+      </button>
+    </div>
+  );
+}
