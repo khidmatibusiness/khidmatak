@@ -110,11 +110,11 @@ export function SosSheet({ open, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-8 max-h-[90vh] overflow-y-auto"
+        className="bg-white w-full max-w-md rounded-t-3xl px-5 pt-3 pb-5 max-h-[88vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: "var(--shadow-float)" }}
       >
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-muted mb-4" />
+        <div className="mx-auto h-1.5 w-10 rounded-full bg-muted mb-3" />
 
         {step === "pick" && (
           <div className="space-y-5 animate-fade-up">
