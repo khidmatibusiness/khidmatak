@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Lock, Unlock, Users, MapPin, X } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { bookings, type Booking } from "@/lib/mock-data";
-import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/bookings")({
   head: () => ({
@@ -15,32 +14,116 @@ export const Route = createFileRoute("/bookings")({
   component: BookingsPage,
 });
 
-function StatusBadge({ status }: { status: Booking["status"] }) {
-  const { t } = useI18n();
-  const map = {
-    confirmed: { label: t("confirmed"), bg: "var(--color-primary)", fg: "white" },
-    pending: { label: t("pending"), bg: "oklch(0.85 0.13 80)", fg: "oklch(0.25 0.05 80)" },
-    completed: { label: t("completed"), bg: "var(--color-muted)", fg: "var(--color-muted-foreground)" },
-  } as const;
-  const s = map[status];
+type BookingStatus = "pending" | "confirmed" | "in_progress" | "done" | "cancelled";
+
+interface BookingRow {
+  id: string;
+  status: BookingStatus | string | null;
+  scheduled_at: string | null;
+  created_at: string | null;
+  total_amount: number;
+  payment_method: string;
+  service_id: string | null;
+  pro_id: string | null;
+  service?: { name_en: string | null; name_ar: string | null } | null;
+  pro?: { full_name: string | null } | null;
+}
+
+const UPCOMING = ["pending", "confirmed", "in_progress"];
+const PAST = ["done", "cancelled"];
+
+export function statusStyle(status: string | null | undefined) {
+  switch (status) {
+    case "pending":
+      return { label: "Pending", bg: "oklch(0.92 0.13 90)", fg: "oklch(0.32 0.12 80)" };
+    case "confirmed":
+      return { label: "Confirmed", bg: "oklch(0.92 0.08 240)", fg: "oklch(0.32 0.15 245)" };
+    case "in_progress":
+      return { label: "In progress", bg: "oklch(0.92 0.13 55)", fg: "oklch(0.40 0.18 50)" };
+    case "done":
+      return { label: "Done", bg: "oklch(0.92 0.13 155)", fg: "oklch(0.36 0.14 155)" };
+    case "cancelled":
+      return { label: "Cancelled", bg: "oklch(0.93 0.08 25)", fg: "oklch(0.40 0.18 25)" };
+    default:
+      return { label: status ?? "—", bg: "var(--color-muted)", fg: "var(--color-muted-foreground)" };
+  }
+}
+
+export function StatusBadge({ status }: { status: string | null | undefined }) {
+  const s = statusStyle(status);
   return (
-    <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.fg }}>
+    <span
+      className="text-[10px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+      style={{ background: s.bg, color: s.fg }}
+    >
       {s.label}
     </span>
   );
 }
 
+export function formatWhen(scheduled: string | null, lang: "en" | "ar") {
+  if (!scheduled) return lang === "ar" ? "الآن" : "ASAP";
+  return new Date(scheduled).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function BookingsPage() {
-  const { t } = useI18n();
-  const [tab, setTab] = useState<"active" | "completed">("active");
-  const list = bookings.filter((b) => (tab === "active" ? b.status !== "completed" : b.status === "completed"));
+  const { t, lang } = useI18n();
+  const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
+  const [rows, setRows] = useState<BookingRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setRows([]); setLoading(false); return; }
+      const statuses = tab === "upcoming" ? UPCOMING : PAST;
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("id,status,scheduled_at,created_at,total_amount,payment_method,service_id,pro_id")
+        .eq("customer_id", user.id)
+        .in("status", statuses)
+        .order("scheduled_at", { ascending: tab === "upcoming", nullsFirst: tab === "upcoming" })
+        .order("created_at", { ascending: false });
+      if (error || !data) { if (!cancelled) { setRows([]); setLoading(false); } return; }
+
+      const serviceIds = Array.from(new Set(data.map((b) => b.service_id).filter(Boolean) as string[]));
+      const proIds = Array.from(new Set(data.map((b) => b.pro_id).filter(Boolean) as string[]));
+      const [{ data: services }, { data: pros }] = await Promise.all([
+        serviceIds.length
+          ? supabase.from("services").select("id,name_en,name_ar").in("id", serviceIds)
+          : Promise.resolve({ data: [] as { id: string; name_en: string | null; name_ar: string | null }[] }),
+        proIds.length
+          ? supabase.from("users").select("id,full_name").in("id", proIds)
+          : Promise.resolve({ data: [] as { id: string; full_name: string | null }[] }),
+      ]);
+      const sMap = new Map((services ?? []).map((s) => [s.id, s]));
+      const pMap = new Map((pros ?? []).map((p) => [p.id, p]));
+
+      const merged: BookingRow[] = data.map((b) => ({
+        ...b,
+        total_amount: Number(b.total_amount),
+        service: b.service_id ? sMap.get(b.service_id) ?? null : null,
+        pro: b.pro_id ? pMap.get(b.pro_id) ?? null : null,
+      }));
+      if (!cancelled) { setRows(merged); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [tab]);
 
   return (
-    <div className="px-5 pt-8 space-y-5 animate-fade-up">
+    <div className="px-5 pt-8 pb-8 space-y-5 animate-fade-up">
       <h1 className="text-2xl font-bold tracking-tight">{t("bookings")}</h1>
 
       <div className="glass rounded-2xl p-1 flex">
-        {(["active", "completed"] as const).map((k) => {
+        {(["upcoming", "past"] as const).map((k) => {
           const active = tab === k;
           return (
             <button
@@ -52,64 +135,59 @@ function BookingsPage() {
                 color: active ? "white" : "var(--color-muted-foreground)",
               }}
             >
-              {t(k)}
+              {k === "upcoming" ? (lang === "ar" ? "القادمة" : "Upcoming") : (lang === "ar" ? "السابقة" : "Past")}
             </button>
           );
         })}
       </div>
 
+      {loading && (
+        <div className="flex items-center justify-center py-12 text-muted-foreground">
+          <Loader2 className="animate-spin" size={20} />
+        </div>
+      )}
+
+      {!loading && rows.length === 0 && (
+        <div className="glass rounded-3xl py-12 text-center text-sm text-muted-foreground">
+          {lang === "ar" ? "لا توجد حجوزات هنا" : "No bookings here yet"}
+        </div>
+      )}
+
       <div className="space-y-3">
-        {list.map((b) => (
-          <div key={b.id} className="glass rounded-3xl p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="text-3xl">{b.emoji}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="font-semibold text-sm leading-tight truncate">{b.service}</div>
-                  <StatusBadge status={b.status} />
+        {rows.map((b) => {
+          const proName = b.pro?.full_name ?? (lang === "ar" ? "مزود الخدمة" : "Provider");
+          const initial = (proName.trim()[0] ?? "?").toUpperCase();
+          const serviceName = (lang === "ar" ? b.service?.name_ar : b.service?.name_en) ?? b.service?.name_en ?? "—";
+          return (
+            <Link
+              to="/bookings/$id"
+              params={{ id: b.id }}
+              key={b.id}
+              className="spring-tap block glass rounded-3xl p-4"
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold shrink-0"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  {initial}
                 </div>
-                <div className="text-xs text-muted-foreground mt-0.5">{b.provider}</div>
-                <div className="text-xs text-foreground mt-1">{b.date}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-semibold text-sm leading-tight truncate">{serviceName}</div>
+                    <StatusBadge status={b.status} />
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5 truncate">{proName}</div>
+                  <div className="text-xs text-foreground mt-1">{formatWhen(b.scheduled_at, lang as "en" | "ar")}</div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-[11px] text-muted-foreground capitalize">{b.payment_method}</span>
+                    <span className="text-sm font-semibold text-primary">{b.total_amount.toFixed(2)} JOD</span>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full"
-                style={{
-                  background: b.paymentLocked ? "var(--color-primary-tint)" : "var(--color-muted)",
-                  color: b.paymentLocked ? "var(--color-primary)" : "var(--color-muted-foreground)",
-                }}
-              >
-                {b.paymentLocked ? <Lock size={12} /> : <Unlock size={12} />}
-                {b.paymentLocked ? t("paymentLocked") : t("paymentUnlocked")} · {b.amountJod} JOD
-              </span>
-              {b.groupSplit && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-accent text-accent-foreground">
-                  <Users size={12} />
-                  {t("groupSplit")} · {b.groupSplit.members}
-                </span>
-              )}
-            </div>
-
-            {b.status !== "completed" && (
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => toast.success(`${b.service} cancelled — refund issued`)}
-                  className="spring-tap flex-1 rounded-2xl py-2.5 text-sm font-medium border border-border flex items-center justify-center gap-1.5"
-                >
-                  <X size={15} /> {t("cancel")}
-                </button>
-                <button
-                  onClick={() => toast(`Tracking ${b.provider} — live ETA enabled`)}
-                  className="spring-tap flex-1 rounded-2xl py-2.5 text-sm font-semibold bg-primary text-primary-foreground flex items-center justify-center gap-1.5"
-                >
-                  <MapPin size={15} /> {t("track")}
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
