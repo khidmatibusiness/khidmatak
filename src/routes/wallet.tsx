@@ -104,20 +104,27 @@ function WalletPage() {
         </div>
 
         {/* actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2.5">
           <button
             onClick={() => { haptic("light"); setSheet("topup"); }}
-            className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
+            className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
           >
-            <span className="rounded-xl bg-primary-tint text-primary p-2"><Plus size={20} /></span>
-            <span className="text-xs font-medium">{t("topUp")}</span>
+            <span className="rounded-xl bg-primary-tint text-primary p-2"><Plus size={18} /></span>
+            <span className="text-[11px] font-medium">{t("topUp")}</span>
           </button>
           <button
             onClick={() => { haptic("light"); setSheet("send"); }}
-            className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
+            className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
           >
-            <span className="rounded-xl bg-primary-tint text-primary p-2"><Send size={20} /></span>
-            <span className="text-xs font-medium">{lang === "ar" ? "إرسال بالرمز" : "Send by code"}</span>
+            <span className="rounded-xl bg-primary-tint text-primary p-2"><Send size={18} /></span>
+            <span className="text-[11px] font-medium">{lang === "ar" ? "إرسال" : "Send"}</span>
+          </button>
+          <button
+            onClick={() => { haptic("light"); setSheet("split"); }}
+            className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
+          >
+            <span className="rounded-xl bg-primary-tint text-primary p-2"><Split size={18} /></span>
+            <span className="text-[11px] font-medium">{lang === "ar" ? "تقسيم" : "Split"}</span>
           </button>
         </div>
 
