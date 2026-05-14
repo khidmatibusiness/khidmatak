@@ -15,7 +15,6 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MyReviewsRouteImport } from './routes/my-reviews'
-import { Route as MapRouteImport } from './routes/map'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FavouritesRouteImport } from './routes/favourites'
@@ -56,11 +55,6 @@ const ProfileRoute = ProfileRouteImport.update({
 const MyReviewsRoute = MyReviewsRouteImport.update({
   id: '/my-reviews',
   path: '/my-reviews',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapRoute = MapRouteImport.update({
-  id: '/map',
-  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -126,7 +120,6 @@ export interface FileRoutesByFullPath {
   '/favourites': typeof FavouritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/map': typeof MapRoute
   '/my-reviews': typeof MyReviewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -146,7 +139,6 @@ export interface FileRoutesByTo {
   '/favourites': typeof FavouritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/map': typeof MapRoute
   '/my-reviews': typeof MyReviewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -167,7 +159,6 @@ export interface FileRoutesById {
   '/favourites': typeof FavouritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/map': typeof MapRoute
   '/my-reviews': typeof MyReviewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -189,7 +180,6 @@ export interface FileRouteTypes {
     | '/favourites'
     | '/forgot-password'
     | '/login'
-    | '/map'
     | '/my-reviews'
     | '/profile'
     | '/reset-password'
@@ -209,7 +199,6 @@ export interface FileRouteTypes {
     | '/favourites'
     | '/forgot-password'
     | '/login'
-    | '/map'
     | '/my-reviews'
     | '/profile'
     | '/reset-password'
@@ -229,7 +218,6 @@ export interface FileRouteTypes {
     | '/favourites'
     | '/forgot-password'
     | '/login'
-    | '/map'
     | '/my-reviews'
     | '/profile'
     | '/reset-password'
@@ -250,7 +238,6 @@ export interface RootRouteChildren {
   FavouritesRoute: typeof FavouritesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
-  MapRoute: typeof MapRoute
   MyReviewsRoute: typeof MyReviewsRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -304,13 +291,6 @@ declare module '@tanstack/react-router' {
       path: '/my-reviews'
       fullPath: '/my-reviews'
       preLoaderRoute: typeof MyReviewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/map': {
-      id: '/map'
-      path: '/map'
-      fullPath: '/map'
-      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -424,7 +404,6 @@ const rootRouteChildren: RootRouteChildren = {
   FavouritesRoute: FavouritesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
-  MapRoute: MapRoute,
   MyReviewsRoute: MyReviewsRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,

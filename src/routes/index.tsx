@@ -4,6 +4,7 @@ import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Load
 import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { SosSheet } from "@/components/SosSheet";
+import { MapSheet } from "@/components/MapSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getFavs, toggleFav as toggleFavStore } from "@/lib/favs";
@@ -59,6 +60,7 @@ function HomePage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
@@ -244,13 +246,13 @@ function HomePage() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">Near you</h2>
-          <Link
-            to="/map"
+          <button
+            onClick={() => setMapOpen(true)}
             className="spring-tap rounded-full px-3.5 py-1.5 text-sm font-medium flex items-center gap-1.5"
             style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
           >
             <MapPin size={14} /> View on map
-          </Link>
+          </button>
         </div>
         {nearbyLoading ? (
           <div className="py-8 flex justify-center">
@@ -333,6 +335,7 @@ function HomePage() {
 
       {/* SOS sheet (pop-out) */}
       <SosSheet open={sosOpen} onClose={() => setSosOpen(false)} />
+      <MapSheet open={mapOpen} onClose={() => setMapOpen(false)} />
 
       {/* Ask AI suggestions sheet */}
       {aiOpen && (
