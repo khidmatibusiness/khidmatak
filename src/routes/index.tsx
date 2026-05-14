@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { SosSheet } from "@/components/SosSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
