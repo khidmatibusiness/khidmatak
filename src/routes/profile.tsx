@@ -52,6 +52,7 @@ function ProfilePage() {
   }, []);
 
   const logout = async () => {
+    haptic("warning");
     await supabase.auth.signOut();
     toast.success(lang === "ar" ? "تم تسجيل الخروج" : "Logged out");
     navigate({ to: "/welcome" });
