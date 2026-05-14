@@ -47,7 +47,6 @@ const categories = [
   { id: "beauty", label: { en: "Beauty", ar: "تجميل" }, emoji: "💆", tint: "linear-gradient(160deg, oklch(0.95 0.05 20), oklch(0.99 0.02 20))" },
 ];
 
-
 function HomePage() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
@@ -96,6 +95,14 @@ function HomePage() {
       return n;
     });
 
+  const q = query.trim().toLowerCase();
+  const filteredNearby = q
+    ? nearby.filter((s) =>
+        [s.name_en, s.name_ar ?? "", s.pro_name, s.category ?? "", s.subcategory ?? ""]
+          .some((v) => v.toLowerCase().includes(q)),
+      )
+    : nearby;
+
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
       {/* header */}
@@ -142,7 +149,13 @@ function HomePage() {
       )}
 
       {/* search + Ask AI */}
-      <div className="glass rounded-full flex items-center gap-2 pl-5 pr-1.5 py-1.5">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (query.trim()) navigate({ to: "/concierge", search: { q: query.trim() } });
+        }}
+        className="glass rounded-full flex items-center gap-2 pl-5 pr-1.5 py-1.5"
+      >
         <Search size={18} className="text-muted-foreground shrink-0" />
         <input
           value={query}
@@ -151,6 +164,7 @@ function HomePage() {
           className="bg-transparent outline-none flex-1 text-sm placeholder:text-muted-foreground py-2 min-w-0"
         />
         <button
+          type="button"
           onClick={() => navigate({ to: "/concierge", search: query.trim() ? { q: query.trim() } : {} })}
           className="spring-tap shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
@@ -158,7 +172,7 @@ function HomePage() {
           <Sparkles size={15} />
           Ask AI
         </button>
-      </div>
+      </form>
 
       {/* Categories */}
       <section className="space-y-3">
@@ -196,25 +210,25 @@ function HomePage() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">Near you</h2>
-          <button
-            onClick={() => toast("Map view — coming soon")}
+          <Link
+            to="/map"
             className="spring-tap rounded-full px-3.5 py-1.5 text-sm font-medium flex items-center gap-1.5"
             style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
           >
             <MapPin size={14} /> View on map
-          </button>
+          </Link>
         </div>
         {nearbyLoading ? (
           <div className="py-8 flex justify-center">
             <Loader2 className="animate-spin text-primary" size={20} />
           </div>
-        ) : nearby.length === 0 ? (
+        ) : filteredNearby.length === 0 ? (
           <div className="text-center text-sm text-muted-foreground py-8">
             {lang === "ar" ? "لا توجد خدمات قريبة بعد." : "No nearby services yet."}
           </div>
         ) : (
           <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
-            {nearby.map((s) => {
+            {filteredNearby.map((s) => {
               const fav = favs.has(s.id);
               const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
               const tint = (s.category && CATEGORY_TINT[s.category]) || "oklch(0.97 0.025 158)";
