@@ -238,6 +238,8 @@ function ProProfilePage() {
           </button>
         </div>
       </div>
+
+      <BookingSheet serviceId={service.id} proName={proName} open={bookOpen} onClose={() => setBookOpen(false)} />
     </div>
   );
 }
