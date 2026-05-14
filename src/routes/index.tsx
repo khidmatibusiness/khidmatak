@@ -1,9 +1,34 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const SUBCAT_EMOJI: Record<string, string> = {
+  cleaning: "🧼", laundry: "🧺", pest: "🪲", painting: "🎨",
+  padel: "🎾", football: "⚽", gym: "🏋️", swim: "🏊", tennis: "🎾",
+  dentist: "🦷", optician: "👓", lab: "🧪",
+  barber: "💈", salon: "💇", hammam: "🛁", spa: "💆",
+};
+const CATEGORY_TINT: Record<string, string> = {
+  home: "oklch(0.97 0.025 158)",
+  sports: "oklch(0.97 0.05 110)",
+  medical: "oklch(0.97 0.025 230)",
+  beauty: "oklch(0.97 0.03 20)",
+};
+
+interface NearbyService {
+  id: string;
+  name_en: string;
+  name_ar: string | null;
+  category: string | null;
+  subcategory: string | null;
+  price: number;
+  pro_id: string | null;
+  pro_name: string;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
