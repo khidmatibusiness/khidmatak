@@ -414,6 +414,7 @@ export type Database = {
         Args: { p_amount: number; p_wallet_id: string }
         Returns: undefined
       }
+      lookup_wallet_by_code: { Args: { p_code: string }; Returns: Json }
       process_booking_payment: {
         Args: {
           p_amount: number
@@ -422,6 +423,10 @@ export type Database = {
           p_pro_wallet_id: string
         }
         Returns: undefined
+      }
+      process_split_send: {
+        Args: { p_amount: number; p_recipient_code: string }
+        Returns: Json
       }
     }
     Enums: {
