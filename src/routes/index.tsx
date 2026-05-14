@@ -153,7 +153,13 @@ function HomePage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          // Normal search just filters in place — already reactive
+      {/* search + Ask AI */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (query.trim()) {
+            navigate({ to: "/concierge", search: { q: query.trim() } });
+          }
         }}
         className="glass rounded-full flex items-center gap-2 pl-5 pr-1.5 py-1.5"
       >
@@ -166,7 +172,13 @@ function HomePage() {
         />
         <button
           type="button"
-          onClick={() => setAiOpen(true)}
+          onClick={() => {
+            if (query.trim()) {
+              navigate({ to: "/concierge", search: { q: query.trim() } });
+            } else {
+              setAiOpen(true);
+            }
+          }}
           className="spring-tap shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
         >
