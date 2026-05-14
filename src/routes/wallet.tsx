@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2,
+  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2, Receipt,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { WalletTxSkeleton } from "@/components/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { haptic } from "@/lib/haptics";
 
 export const Route = createFileRoute("/wallet")({
   head: () => ({
@@ -36,7 +39,7 @@ interface Tx {
 }
 
 function WalletPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [showCode, setShowCode] = useState(false);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [txs, setTxs] = useState<Tx[]>([]);
@@ -103,18 +106,18 @@ function WalletPage() {
         {/* actions */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setSheet("topup")}
+            onClick={() => { haptic("light"); setSheet("topup"); }}
             className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
           >
             <span className="rounded-xl bg-primary-tint text-primary p-2"><Plus size={20} /></span>
             <span className="text-xs font-medium">{t("topUp")}</span>
           </button>
           <button
-            onClick={() => setSheet("send")}
+            onClick={() => { haptic("light"); setSheet("send"); }}
             className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
           >
             <span className="rounded-xl bg-primary-tint text-primary p-2"><Send size={20} /></span>
-            <span className="text-xs font-medium">Send by code</span>
+            <span className="text-xs font-medium">{lang === "ar" ? "إرسال بالرمز" : "Send by code"}</span>
           </button>
         </div>
 
@@ -123,12 +126,15 @@ function WalletPage() {
           <h2 className="text-sm font-semibold mb-2 px-1">{t("recent")}</h2>
           <div className="glass rounded-3xl divide-y divide-border overflow-hidden">
             {loading && (
-              <div className="flex items-center justify-center py-8 text-muted-foreground">
-                <Loader2 size={18} className="animate-spin" />
-              </div>
+              <div className="p-3"><WalletTxSkeleton /></div>
             )}
             {!loading && txs.length === 0 && (
-              <div className="text-center text-sm text-muted-foreground py-8">No transactions yet</div>
+              <EmptyState
+                icon={<Receipt size={20} />}
+                title={lang === "ar" ? "لا توجد عمليات بعد" : "No transactions yet"}
+                description={lang === "ar" ? "ستظهر تعاملات محفظتك هنا." : "Your wallet activity will appear here."}
+                className="border-0"
+              />
             )}
             {!loading && txs.map((tx) => {
               const credit = tx.to_wallet_id === wallet?.id;

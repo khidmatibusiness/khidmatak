@@ -86,7 +86,11 @@ interface I18nCtx {
 const Ctx = createContext<I18nCtx | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLangState] = useState<Lang>(() => {
+    if (typeof localStorage === "undefined") return "en";
+    const saved = localStorage.getItem("khidmati_lang");
+    return saved === "ar" ? "ar" : "en";
+  });
   const dir = lang === "ar" ? "rtl" : "ltr";
 
   useEffect(() => {
@@ -94,8 +98,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       document.documentElement.lang = lang;
       document.documentElement.dir = dir;
     }
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("khidmati_lang", lang);
+    }
   }, [lang, dir]);
 
+  const setLang = (l: Lang) => setLangState(l);
   const t = (k: keyof typeof dict) => dict[k][lang];
   return <Ctx.Provider value={{ lang, dir, setLang, t }}>{children}</Ctx.Provider>;
 }

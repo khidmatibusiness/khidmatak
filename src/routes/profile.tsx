@@ -4,6 +4,8 @@ import { Camera, Settings, LogOut, ChevronRight, Languages, Copy, Wallet as Wall
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ProfileSkeleton } from "@/components/Skeleton";
+import { haptic } from "@/lib/haptics";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -50,13 +52,19 @@ function ProfilePage() {
   }, []);
 
   const logout = async () => {
+    haptic("warning");
     await supabase.auth.signOut();
     toast.success(lang === "ar" ? "تم تسجيل الخروج" : "Logged out");
     navigate({ to: "/welcome" });
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center py-20 text-muted-foreground"><Loader2 className="animate-spin" size={20} /></div>;
+    return (
+      <div className="px-5 pt-8 pb-8 space-y-5">
+        <div className="h-7 w-32 rounded-xl bg-muted animate-pulse" />
+        <ProfileSkeleton />
+      </div>
+    );
   }
 
   const name = data?.full_name ?? (lang === "ar" ? "المستخدم" : "User");
