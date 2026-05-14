@@ -40,19 +40,19 @@ function WelcomePage() {
 
       <div className="space-y-3">
         <Link
+          to="/login"
+          onClick={() => { try { localStorage.setItem("khidmati_launched", "1"); } catch {} }}
+          className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold border border-border bg-white text-center block"
+        >
+          {t("login")}
+        </Link>
+        <Link
           to="/signup"
           onClick={() => { try { localStorage.setItem("khidmati_launched", "1"); } catch {} }}
           className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white flex items-center justify-center gap-2"
           style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
         >
           {t("signup")} <ArrowRight size={16} className="rtl:rotate-180" />
-        </Link>
-        <Link
-          to="/login"
-          onClick={() => { try { localStorage.setItem("khidmati_launched", "1"); } catch {} }}
-          className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold border border-border bg-white text-center"
-        >
-          {t("login")}
         </Link>
         <Link
           to="/"
