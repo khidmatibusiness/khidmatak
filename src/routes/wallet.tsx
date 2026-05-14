@@ -105,7 +105,7 @@ function WalletPage() {
         </div>
 
         {/* actions */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => { haptic("light"); setSheet("topup"); }}
             className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
@@ -121,18 +121,11 @@ function WalletPage() {
             <span className="text-[10px] font-medium">{lang === "ar" ? "إرسال" : "Send"}</span>
           </button>
           <button
-            onClick={() => { haptic("light"); setSheet("split"); }}
-            className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
-          >
-            <span className="rounded-xl bg-primary-tint text-primary p-2"><Split size={18} /></span>
-            <span className="text-[10px] font-medium">{lang === "ar" ? "تقسيم" : "Split"}</span>
-          </button>
-          <button
             onClick={() => { haptic("light"); setSheet("groups"); }}
             className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
           >
             <span className="rounded-xl bg-primary-tint text-primary p-2"><Users size={18} /></span>
-            <span className="text-[10px] font-medium">{lang === "ar" ? "مجموعات" : "Groups"}</span>
+            <span className="text-[10px] font-medium">{lang === "ar" ? "تقسيم" : "Split"}</span>
           </button>
         </div>
 
