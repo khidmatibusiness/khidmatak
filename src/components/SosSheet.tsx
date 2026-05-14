@@ -110,43 +110,43 @@ export function SosSheet({ open, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-8 max-h-[90vh] overflow-y-auto"
+        className="bg-white w-full max-w-md rounded-t-3xl px-5 pt-3 pb-5 max-h-[88vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: "var(--shadow-float)" }}
       >
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-muted mb-4" />
+        <div className="mx-auto h-1.5 w-10 rounded-full bg-muted mb-3" />
 
         {step === "pick" && (
-          <div className="space-y-5 animate-fade-up">
+          <div className="space-y-4 animate-fade-up">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <div
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-white"
+                  className="w-9 h-9 rounded-2xl flex items-center justify-center text-white"
                   style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
                 >
-                  <Siren size={18} />
+                  <Siren size={16} />
                 </div>
-                <div className="font-bold text-lg leading-tight">SOS Emergency</div>
+                <div>
+                  <div className="font-bold text-base leading-tight">SOS Emergency</div>
+                  <div className="text-[11px] text-muted-foreground">Broadcast to nearest verified pros</div>
+                </div>
               </div>
               <button onClick={onClose} aria-label="Close" className="text-muted-foreground p-1">
                 <X size={20} />
               </button>
             </div>
-            <div className="text-sm text-muted-foreground -mt-2">
-              Broadcast to nearest verified providers. Urgency fee applies.
-            </div>
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-3 gap-2">
               {SOS_KINDS.map((k) => {
                 const active = kind === k.id;
                 return (
                   <button
                     key={k.id}
                     onClick={() => setKind(k.id)}
-                    className={`spring-tap rounded-2xl p-3 flex flex-col items-center gap-1.5 border ${active ? "border-primary" : "border-border bg-white"}`}
+                    className={`spring-tap rounded-2xl py-2.5 px-1 flex flex-col items-center gap-1 border ${active ? "border-primary" : "border-border bg-white"}`}
                     style={{ background: active ? "var(--color-primary-tint)" : undefined }}
                   >
-                    <span className="text-2xl">{k.emoji}</span>
-                    <span className="text-xs font-semibold text-center leading-tight">{k.label}</span>
+                    <span className="text-xl">{k.emoji}</span>
+                    <span className="text-[11px] font-semibold text-center leading-tight">{k.label}</span>
                   </button>
                 );
               })}
@@ -154,7 +154,7 @@ export function SosSheet({ open, onClose }: Props) {
             <button
               disabled={!kind}
               onClick={() => { setStep("offers"); setRevealed(0); }}
-              className="spring-tap w-full rounded-full py-3.5 font-semibold text-white disabled:opacity-50"
+              className="spring-tap w-full rounded-full py-3 font-semibold text-white disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
             >
               Send emergency request
