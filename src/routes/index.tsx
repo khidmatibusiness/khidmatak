@@ -102,13 +102,7 @@ function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
-  const toggleFav = (id: string) =>
-    setFavs((s) => {
-      const n = new Set(s);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
+  const toggleFav = (id: string) => setFavs(new Set(toggleFavStore(id)));
 
   const q = query.trim().toLowerCase();
   const filteredNearby = q
