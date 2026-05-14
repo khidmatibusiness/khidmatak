@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -38,6 +38,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Book trusted home, sports, medical and beauty services across West Amman." },
     ],
   }),
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && !localStorage.getItem("khidmati_launched")) {
+      throw redirect({ to: "/welcome" });
+    }
+  },
   component: HomePage,
 });
 

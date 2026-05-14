@@ -41,6 +41,7 @@ function WelcomePage() {
       <div className="space-y-3">
         <Link
           to="/signup"
+          onClick={() => { try { localStorage.setItem("khidmati_launched", "1"); } catch {} }}
           className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white flex items-center justify-center gap-2"
           style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
         >
@@ -48,12 +49,14 @@ function WelcomePage() {
         </Link>
         <Link
           to="/login"
+          onClick={() => { try { localStorage.setItem("khidmati_launched", "1"); } catch {} }}
           className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold border border-border bg-white text-center"
         >
           {t("login")}
         </Link>
         <Link
           to="/"
+          onClick={() => { try { localStorage.setItem("khidmati_launched", "1"); } catch {} }}
           className="spring-tap block w-full text-center rounded-2xl py-3 text-sm font-medium text-primary"
         >
           {t("continueGuest")} →
