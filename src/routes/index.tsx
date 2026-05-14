@@ -65,6 +65,13 @@ function HomePage() {
   const [nearbyLoading, setNearbyLoading] = useState(true);
 
   useEffect(() => {
+    const sync = () => setFavs(new Set(getFavs()));
+    sync();
+    window.addEventListener("khidmati:favs", sync);
+    return () => window.removeEventListener("khidmati:favs", sync);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: svc } = await supabase
