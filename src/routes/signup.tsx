@@ -20,6 +20,7 @@ function SignupPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [referral, setReferral] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,9 +56,18 @@ function SignupPage() {
       }
 
       if (data.session) {
+        if (referral.trim()) {
+          const { error: refErr } = await supabase.rpc("redeem_referral", { p_code: referral.trim() });
+          if (refErr) toast.error(`Referral: ${refErr.message}`);
+          else toast.success("Referral applied · +2 JOD added to your wallet");
+        }
         toast.success("Welcome to Khidmati!");
         navigate({ to: "/" });
       } else {
+        if (referral.trim()) {
+          // Persist for redemption after email confirmation if needed
+          try { localStorage.setItem("pending_referral", referral.trim()); } catch { /* noop */ }
+        }
         toast.success("Check your email to confirm your account");
         navigate({ to: "/login" });
       }
