@@ -132,9 +132,9 @@ function WalletPage() {
             )}
             {!loading && txs.map((tx) => {
               const credit = tx.to_wallet_id === wallet?.id;
-              const date = new Date(tx.created_at).toLocaleDateString(undefined, {
+              const date = tx.created_at ? new Date(tx.created_at).toLocaleDateString(undefined, {
                 month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-              });
+              }) : "";
               const label = describeTx(tx.type, credit);
               return (
                 <div key={tx.id} className="flex items-center gap-3 p-3.5">
