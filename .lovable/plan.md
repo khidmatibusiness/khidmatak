@@ -1,38 +1,23 @@
-## What I found
+## Goal
+Turn the map screen into a bottom-sheet popup (like the SOS sheet), opened from the home page, instead of navigating to `/map`.
 
-- The AI backend is not the current blocker: calling `ai-concierge` directly with `padel for 30 jds` returns the correct padel options under 30 JOD.
-- The frontend search/Ask AI flow is the blocker. The home search currently routes typed searches into the AI page instead of simply showing filtered home results, and the AI route uses `?q=` while parts of the app were recently wired inconsistently.
-- The old syntax error came from duplicated JSX in `src/routes/index.tsx`; the current file looks syntactically clean, but I will still validate after edits.
+## Changes
 
-## Plan
+1. **New `src/components/MapSheet.tsx`** (based on existing `src/routes/map.tsx`)
+   - Props: `{ open: boolean; onClose: () => void }`.
+   - Full-screen overlay with the same look as `SosSheet` (dark backdrop + slide-up panel, rounded top, `glass-strong` chrome).
+   - Inside: header with back/close button + "Providers map" pill + "Locate me" button (same as today), the Leaflet map (~62vh) lazy-loaded with the existing `LeafletMap` component, and the bottom selected-provider card.
+   - Tapping the provider card still navigates to `/pro/$id` and closes the sheet.
+   - Lazy-load `LeafletMap` only when `open` is true so the map JS isn't fetched until the user taps the button.
 
-1. **Make home search actually search on the home page**
-   - Keep typed results visible directly under “Nearby services”.
-   - Pressing Enter should not leave the page.
-   - Queries like `padl for 30 jds`, `padel under 30`, `cleaning under 10`, and `fun near me` should filter the Supabase services list.
-   - Add light typo tolerance so `padl` still matches `padel`.
+2. **`src/routes/index.tsx`**
+   - Replace the `<Link to="/map">View on map</Link>` button with a regular `<button>` that opens the new `MapSheet` (local `useState`).
+   - Import and render `<MapSheet open={...} onClose={...} />` at the page root.
 
-2. **Make Ask AI separate from normal search**
-   - The Ask AI button will send the current typed text to `/concierge` only when the user explicitly taps Ask AI.
-   - It will use the same search param consistently: `?q=...`.
-   - The concierge page will auto-send the query once and show the real AI response.
+3. **Delete `src/routes/map.tsx`**
+   - Removes the standalone route. `routeTree.gen.ts` regenerates automatically.
 
-3. **Stop wasting AI credits for plain search**
-   - Normal typing and Enter search will use Supabase data only.
-   - Lovable AI will only be called when the user taps Ask AI or sends a message inside concierge.
-
-4. **Improve AI page error visibility**
-   - If the function fails, show the real reason in the chat instead of generic repeated fallback text.
-   - Keep the user’s input visible so they can retry.
-
-5. **Validate the exact cases**
-   - Direct Supabase-backed home search: `padl for 30 jds` should show 22/25 JOD padel courts.
-   - AI direct call: already verified working; re-check after frontend wiring.
-   - Confirm no syntax error/blank screen remains.
-
-## Files to edit
-
-- `src/routes/index.tsx`
-- `src/routes/concierge.tsx`
-
-No database migration is needed, and no Supabase Edge Function redeploy should be needed unless validation shows the deployed function differs from the local code.
+## Notes
+- No backend, schema, or AI changes.
+- Reuses the existing `LeafletMap` component as-is.
+- Pattern mirrors `SosSheet` for consistency (animation, close behavior, z-index).
