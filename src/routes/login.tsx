@@ -89,6 +89,17 @@ function LoginPage() {
         </button>
       </form>
 
+      <button
+        type="button"
+        onClick={() => {
+          toast("Browsing as guest");
+          navigate({ to: "/" });
+        }}
+        className="spring-tap w-full rounded-2xl py-3 text-sm font-semibold text-foreground border border-border bg-white mt-3"
+      >
+        Continue as guest
+      </button>
+
       <p className="text-center text-xs text-muted-foreground mt-6">
         New to Khidmati?{" "}
         <Link to="/signup" className="text-primary font-semibold">Create an account</Link>
