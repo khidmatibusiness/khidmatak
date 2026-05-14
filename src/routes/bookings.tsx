@@ -1,8 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { CalendarCheck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { BookingsSkeleton } from "@/components/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { haptic } from "@/lib/haptics";
 
 export const Route = createFileRoute("/bookings")({
   head: () => ({
