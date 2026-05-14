@@ -1,13 +1,15 @@
 // Lovable AI-powered Khidmati concierge.
 // Accepts { messages: [{ role, content }], lang? } and returns { message }.
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `You are the Khidmati AI Concierge — a warm, concise assistant for a Jordanian on-demand services app serving West Amman.
+const BASE_SYSTEM_PROMPT = `You are the Khidmati AI Concierge — a warm, concise assistant for a Jordanian on-demand services app serving West Amman.
 
 Khidmati helps customers find and book trusted local pros across these categories:
 - Home (plumbers, electricians, cleaners, AC techs)
@@ -29,8 +31,8 @@ Your job:
 - Answer questions about how Khidmati works.
 - Keep replies short (2-5 sentences), friendly, with at most 1 emoji per reply.
 - If the user writes in Arabic, reply in Arabic. If English, reply in English. Match their language.
-- Never invent a specific pro by name unless the user mentioned them; suggest browsing the relevant category instead.
-- Never promise prices you don't know — say "starts around X JOD" or ask the user to check the pro's profile.`;
+- Use the LIVE CATALOG below as the source of truth. When the user asks for a service (e.g. "padel under 30 JOD", "cheap cleaning", "something fun nearby"), filter the catalog by category, subcategory, keywords, and price, then list 2-4 matching options with the pro name and price in JOD. If nothing matches, say so honestly and suggest the closest category.
+- Never invent pros or prices that aren't in the catalog.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -54,6 +56,49 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    // Fetch live catalog (services + pros + avg ratings) for grounding
+    let catalogBlock = "";
+    try {
+      const supaUrl = Deno.env.get("SUPABASE_URL");
+      const supaKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supaUrl && supaKey) {
+        const supa = createClient(supaUrl, supaKey);
+        const [{ data: services }, { data: users }, { data: reviews }] = await Promise.all([
+          supa.from("services").select("id,name_en,name_ar,category,subcategory,price,duration_mins,pro_id").eq("is_active", true).limit(200),
+          supa.from("users").select("id,full_name"),
+          supa.from("reviews").select("pro_id,rating"),
+        ]);
+        const userMap = new Map<string, string>((users ?? []).map((u: { id: string; full_name: string | null }) => [u.id, u.full_name ?? ""]));
+        const ratings = new Map<string, { sum: number; n: number }>();
+        for (const r of (reviews ?? []) as Array<{ pro_id: string; rating: number }>) {
+          if (!r.pro_id) continue;
+          const cur = ratings.get(r.pro_id) ?? { sum: 0, n: 0 };
+          cur.sum += r.rating ?? 0; cur.n += 1;
+          ratings.set(r.pro_id, cur);
+        }
+        const rows = (services ?? []).map((s: { id: string; name_en: string; name_ar: string | null; category: string | null; subcategory: string | null; price: number; duration_mins: number | null; pro_id: string | null }) => {
+          const r = s.pro_id ? ratings.get(s.pro_id) : null;
+          const avg = r && r.n ? (r.sum / r.n).toFixed(1) : "—";
+          return {
+            id: s.id,
+            name: s.name_en,
+            name_ar: s.name_ar,
+            pro: s.pro_id ? userMap.get(s.pro_id) ?? "Khidmati pro" : "Khidmati pro",
+            category: s.category,
+            subcategory: s.subcategory,
+            price_jod: Number(s.price),
+            duration_mins: s.duration_mins,
+            rating: avg,
+          };
+        });
+        catalogBlock = `\n\nLIVE CATALOG (JSON, ${rows.length} active services):\n${JSON.stringify(rows)}`;
+      }
+    } catch (e) {
+      console.error("catalog fetch failed", e);
+    }
+
+    const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + catalogBlock;
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
