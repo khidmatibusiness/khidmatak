@@ -4,6 +4,8 @@ import { Camera, Settings, LogOut, ChevronRight, Languages, Copy, Wallet as Wall
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ProfileSkeleton } from "@/components/Skeleton";
+import { haptic } from "@/lib/haptics";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
