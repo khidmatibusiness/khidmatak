@@ -6,6 +6,7 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { SosSheet } from "@/components/SosSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getFavs, toggleFav as toggleFavStore } from "@/lib/favs";
 
 const SUBCAT_EMOJI: Record<string, string> = {
   cleaning: "🧼", laundry: "🧺", pest: "🪲", painting: "🎨",
