@@ -141,11 +141,15 @@ function HomePage() {
             <MapPin size={14} /> View on map
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
           {nearYou.map((s) => {
             const fav = favs.has(s.id);
             return (
-              <div key={s.id} className="rounded-3xl bg-white p-3 border border-border" style={{ boxShadow: "var(--shadow-soft)" }}>
+              <div
+                key={s.id}
+                className="shrink-0 w-44 snap-start rounded-3xl bg-white p-3 border border-border"
+                style={{ boxShadow: "var(--shadow-soft)" }}
+              >
                 <div
                   className="relative rounded-2xl h-24 flex items-center justify-center mb-3"
                   style={{ background: s.tint }}
@@ -159,7 +163,7 @@ function HomePage() {
                     <Heart size={14} className={fav ? "fill-destructive text-destructive" : "text-muted-foreground"} />
                   </button>
                 </div>
-                <div className="font-semibold text-sm leading-tight">{s.name[lang]}</div>
+                <div className="font-semibold text-sm leading-tight truncate">{s.name[lang]}</div>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                   <Star size={12} className="fill-gold text-gold" />
                   <span className="font-semibold text-foreground">{s.rating.toFixed(1)}</span>
