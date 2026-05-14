@@ -150,18 +150,11 @@ function BookingFlow() {
         .single();
       if (bErr) throw bErr;
 
-      if (payMethod === "wallet" && service.pro_id) {
-        const { data: proWallet } = await supabase
-          .from("wallets").select("id").eq("user_id", service.pro_id).maybeSingle();
-        if (proWallet && wallet) {
-          const { error: payErr } = await supabase.rpc("process_booking_payment", {
-            p_booking_id: booking.id,
-            p_customer_wallet_id: wallet.id,
-            p_pro_wallet_id: proWallet.id,
-            p_amount: price,
-          });
-          if (payErr) throw payErr;
-        }
+      if (payMethod === "wallet") {
+        const { error: payErr } = await supabase.rpc("confirm_booking_payment", {
+          p_booking_id: booking.id,
+        });
+        if (payErr) throw payErr;
       }
 
       setConfirmed({ ref: booking.id.slice(0, 8).toUpperCase() });
