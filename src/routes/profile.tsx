@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Crown, Settings, LogOut, ChevronRight, Languages, Copy } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -15,6 +16,17 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   const { t, lang, setLang } = useI18n();
   const code = "KH-7F2A-91X";
+
+  const copyCode = async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(code);
+      }
+      toast.success("Private code copied");
+    } catch {
+      toast.error("Couldn't copy");
+    }
+  };
 
   return (
     <div className="px-5 pt-8 space-y-5 animate-fade-up">
@@ -40,54 +52,69 @@ function ProfilePage() {
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("privateCode")}</div>
           <div className="font-mono font-semibold">{code}</div>
         </div>
-        <button className="spring-tap ml-auto rounded-xl bg-white p-2 text-primary">
+        <button onClick={copyCode} className="spring-tap ml-auto rounded-xl bg-white p-2 text-primary">
           <Copy size={16} />
         </button>
       </div>
 
-      {/* language toggle */}
-      <div className="glass rounded-3xl p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="rounded-xl bg-primary-tint text-primary p-2"><Languages size={18} /></div>
-          <div className="flex-1 text-sm font-medium">{t("language")}</div>
+      {/* combined menu: language + gold + settings */}
+      <div className="glass rounded-3xl divide-y divide-border overflow-hidden">
+        {/* language row with inline toggle */}
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-primary"><Languages size={18} /></span>
+            <span className="flex-1 text-sm font-medium">{t("language")}</span>
+          </div>
+          <div className="flex gap-2">
+            {(["en", "ar"] as const).map((l) => {
+              const active = lang === l;
+              return (
+                <button
+                  key={l}
+                  onClick={() => setLang(l)}
+                  className="spring-tap flex-1 rounded-2xl py-2 text-sm font-semibold border"
+                  style={{
+                    background: active ? "var(--color-primary)" : "white",
+                    color: active ? "white" : "var(--color-foreground)",
+                    borderColor: active ? "var(--color-primary)" : "var(--color-border)",
+                  }}
+                >
+                  {l === "en" ? "English" : "العربية"}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex gap-2">
-          {(["en", "ar"] as const).map((l) => {
-            const active = lang === l;
-            return (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className="spring-tap flex-1 rounded-2xl py-2.5 text-sm font-semibold border"
-                style={{
-                  background: active ? "var(--color-primary)" : "white",
-                  color: active ? "white" : "var(--color-foreground)",
-                  borderColor: active ? "var(--color-primary)" : "var(--color-border)",
-                }}
-              >
-                {l === "en" ? "English" : "العربية"}
-              </button>
-            );
-          })}
-        </div>
+
+        <button
+          onClick={() => toast("Khidmati Gold details coming soon")}
+          className="spring-tap w-full flex items-center gap-3 p-4 text-start hover:bg-primary-tint"
+        >
+          <span className="text-primary"><Crown size={18} /></span>
+          <span className="flex-1 text-sm font-medium">{t("goldTitle")}</span>
+          <ChevronRight size={16} className="text-muted-foreground rtl:rotate-180" />
+        </button>
+
+        <button
+          onClick={() => toast("Settings coming soon")}
+          className="spring-tap w-full flex items-center gap-3 p-4 text-start hover:bg-primary-tint"
+        >
+          <span className="text-primary"><Settings size={18} /></span>
+          <span className="flex-1 text-sm font-medium">{t("settings")}</span>
+          <ChevronRight size={16} className="text-muted-foreground rtl:rotate-180" />
+        </button>
       </div>
 
-      <div className="glass rounded-3xl divide-y divide-border overflow-hidden">
-        {[
-          { icon: <Settings size={18} />, label: t("settings") },
-          { icon: <Crown size={18} />, label: t("goldTitle") },
-          { icon: <LogOut size={18} />, label: t("logout"), danger: true },
-        ].map((row) => (
-          <button
-            key={row.label}
-            className="spring-tap w-full flex items-center gap-3 p-4 text-start hover:bg-primary-tint"
-          >
-            <span className={row.danger ? "text-destructive" : "text-primary"}>{row.icon}</span>
-            <span className={`flex-1 text-sm font-medium ${row.danger ? "text-destructive" : ""}`}>{row.label}</span>
-            <ChevronRight size={16} className="text-muted-foreground rtl:rotate-180" />
-          </button>
-        ))}
-      </div>
+      {/* logout separated */}
+      <Link
+        to="/welcome"
+        onClick={() => toast.success("Logged out")}
+        className="spring-tap glass rounded-3xl p-4 w-full flex items-center gap-3 text-destructive"
+      >
+        <LogOut size={18} />
+        <span className="flex-1 text-sm font-semibold">{t("logout")}</span>
+        <ChevronRight size={16} className="rtl:rotate-180" />
+      </Link>
     </div>
   );
 }

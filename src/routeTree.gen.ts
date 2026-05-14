@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/bookings': typeof BookingsRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/welcome': typeof WelcomeRoute
   '/category/$slug': typeof CategorySlugRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/bookings': typeof BookingsRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/welcome': typeof WelcomeRoute
   '/category/$slug': typeof CategorySlugRoute
 }
 export interface FileRoutesById {
@@ -61,19 +69,33 @@ export interface FileRoutesById {
   '/bookings': typeof BookingsRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/welcome': typeof WelcomeRoute
   '/category/$slug': typeof CategorySlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bookings' | '/profile' | '/wallet' | '/category/$slug'
+  fullPaths:
+    | '/'
+    | '/bookings'
+    | '/profile'
+    | '/wallet'
+    | '/welcome'
+    | '/category/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bookings' | '/profile' | '/wallet' | '/category/$slug'
+  to:
+    | '/'
+    | '/bookings'
+    | '/profile'
+    | '/wallet'
+    | '/welcome'
+    | '/category/$slug'
   id:
     | '__root__'
     | '/'
     | '/bookings'
     | '/profile'
     | '/wallet'
+    | '/welcome'
     | '/category/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -82,11 +104,19 @@ export interface RootRouteChildren {
   BookingsRoute: typeof BookingsRoute
   ProfileRoute: typeof ProfileRoute
   WalletRoute: typeof WalletRoute
+  WelcomeRoute: typeof WelcomeRoute
   CategorySlugRoute: typeof CategorySlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wallet': {
       id: '/wallet'
       path: '/wallet'
@@ -130,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookingsRoute: BookingsRoute,
   ProfileRoute: ProfileRoute,
   WalletRoute: WalletRoute,
+  WelcomeRoute: WelcomeRoute,
   CategorySlugRoute: CategorySlugRoute,
 }
 export const routeTree = rootRouteImport

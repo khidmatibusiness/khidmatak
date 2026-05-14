@@ -46,6 +46,17 @@ const dict: Dict = {
   roundUp: { en: "Round-up savings", ar: "مدخرات التقريب" },
   transferToMain: { en: "Transfer to main", ar: "تحويل للرئيسية" },
   recent: { en: "Recent activity", ar: "آخر العمليات" },
+  pendingReq: { en: "Pending requests", ar: "الطلبات المعلقة" },
+  accept: { en: "Accept", ar: "قبول" },
+  decline: { en: "Decline", ar: "رفض" },
+  withdraw: { en: "Withdraw", ar: "سحب" },
+  awaiting: { en: "Awaiting acceptance", ar: "بانتظار القبول" },
+  splitGroups: { en: "Split groups", ar: "مجموعات التقسيم" },
+  newGroup: { en: "New group", ar: "مجموعة جديدة" },
+  groupName: { en: "Group name", ar: "اسم المجموعة" },
+  addCode: { en: "Add code", ar: "أضف رمز" },
+  save: { en: "Save", ar: "حفظ" },
+  members: { en: "members", ar: "أعضاء" },
   // profile
   settings: { en: "Settings", ar: "الإعدادات" },
   language: { en: "Language", ar: "اللغة" },
@@ -55,6 +66,14 @@ const dict: Dict = {
   helpSupport: { en: "Help & support", ar: "الدعم والمساعدة" },
   aboutUs: { en: "About us", ar: "عن خدمتي" },
   goldMember: { en: "Gold member", ar: "عضو جولد" },
+  referFriend: { en: "Refer a friend", ar: "ادعُ صديق" },
+  // welcome
+  welcomeTagline: { en: "On-demand services across West Amman", ar: "خدمات عند الطلب في عمّان الغربية" },
+  continueGuest: { en: "Continue as guest", ar: "متابعة كضيف" },
+  login: { en: "Log in", ar: "تسجيل الدخول" },
+  signup: { en: "Sign up", ar: "إنشاء حساب" },
+  areYouBusiness: { en: "Are you a business?", ar: "هل أنت شركة؟" },
+  clickHere: { en: "Click here", ar: "اضغط هنا" },
 };
 
 interface I18nCtx {

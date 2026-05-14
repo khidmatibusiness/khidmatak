@@ -11,6 +11,7 @@ import {
 import appCss from "../styles.css?url";
 import { I18nProvider } from "@/lib/i18n";
 import { BottomNav } from "@/components/BottomNav";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -86,6 +87,7 @@ function AppFrame({ children }: { children: React.ReactNode }) {
     >
       <div className="max-w-md mx-auto pb-28">{children}</div>
       {showNav && <BottomNav />}
+      <Toaster position="top-center" />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Lock, Unlock, Users, MapPin, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { bookings, type Booking } from "@/lib/mock-data";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/bookings")({
   head: () => ({
@@ -93,10 +94,16 @@ function BookingsPage() {
 
             {b.status !== "completed" && (
               <div className="flex gap-2 pt-1">
-                <button className="spring-tap flex-1 rounded-2xl py-2.5 text-sm font-medium border border-border flex items-center justify-center gap-1.5">
+                <button
+                  onClick={() => toast.success(`${b.service} cancelled — refund issued`)}
+                  className="spring-tap flex-1 rounded-2xl py-2.5 text-sm font-medium border border-border flex items-center justify-center gap-1.5"
+                >
                   <X size={15} /> {t("cancel")}
                 </button>
-                <button className="spring-tap flex-1 rounded-2xl py-2.5 text-sm font-semibold bg-primary text-primary-foreground flex items-center justify-center gap-1.5">
+                <button
+                  onClick={() => toast(`Tracking ${b.provider} — live ETA enabled`)}
+                  className="spring-tap flex-1 rounded-2xl py-2.5 text-sm font-semibold bg-primary text-primary-foreground flex items-center justify-center gap-1.5"
+                >
                   <MapPin size={15} /> {t("track")}
                 </button>
               </div>

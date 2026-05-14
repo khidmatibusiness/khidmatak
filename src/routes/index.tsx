@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -76,7 +77,11 @@ function HomePage() {
             { e: "🚗", l: "Tow truck" },
             { e: "🩹", l: "First aid" },
           ].map((x) => (
-            <button key={x.l} className="spring-tap glass rounded-2xl p-3 text-sm font-medium flex items-center gap-2">
+            <button
+              key={x.l}
+              onClick={() => { toast.success(`${x.l} dispatched — ETA 12 min`); setSosOpen(false); }}
+              className="spring-tap glass rounded-2xl p-3 text-sm font-medium flex items-center gap-2"
+            >
               <span className="text-xl">{x.e}</span> {x.l}
             </button>
           ))}
@@ -93,6 +98,7 @@ function HomePage() {
           className="bg-transparent outline-none flex-1 text-sm placeholder:text-muted-foreground py-2 min-w-0"
         />
         <button
+          onClick={() => toast(query ? `Asking AI: "${query}"` : "AI Concierge ready — type a question")}
           className="spring-tap shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
         >
@@ -105,7 +111,10 @@ function HomePage() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">Categories</h2>
-          <button className="text-sm font-medium text-primary flex items-center gap-0.5">
+          <button
+            onClick={() => toast("All categories — coming soon")}
+            className="text-sm font-medium text-primary flex items-center gap-0.5"
+          >
             See all <ChevronRight size={16} className="rtl:rotate-180" />
           </button>
         </div>
@@ -135,6 +144,7 @@ function HomePage() {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">Near you</h2>
           <button
+            onClick={() => toast("Map view — coming soon")}
             className="spring-tap rounded-full px-3.5 py-1.5 text-sm font-medium flex items-center gap-1.5"
             style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
           >
@@ -191,7 +201,10 @@ function HomePage() {
             Priority booking, exclusive deals, faster SOS
           </div>
         </div>
-        <button className="spring-tap rounded-full bg-white text-foreground text-sm font-semibold px-5 py-2.5">
+        <button
+          onClick={() => toast.success("Khidmati Gold trial activated")}
+          className="spring-tap rounded-full bg-white text-foreground text-sm font-semibold px-5 py-2.5"
+        >
           {t("upgrade")}
         </button>
       </div>
