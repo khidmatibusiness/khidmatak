@@ -68,7 +68,9 @@ function MapPage() {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [meTo, setMeTo] = useState<[number, number] | null>(null);
+  const [mounted, setMounted] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     let cancelled = false;
