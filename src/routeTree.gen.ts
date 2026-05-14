@@ -23,6 +23,7 @@ import { Route as ProIdRouteImport } from './routes/pro.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as BookingsIdRouteImport } from './routes/bookings.$id'
 import { Route as BookServiceIdRouteImport } from './routes/book.$serviceId'
+import { Route as BookingsIdReviewRouteImport } from './routes/bookings.$id.review'
 
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
@@ -94,6 +95,11 @@ const BookServiceIdRoute = BookServiceIdRouteImport.update({
   path: '/book/$serviceId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookingsIdReviewRoute = BookingsIdReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => BookingsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -107,9 +113,10 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
   '/book/$serviceId': typeof BookServiceIdRoute
-  '/bookings/$id': typeof BookingsIdRoute
+  '/bookings/$id': typeof BookingsIdRouteWithChildren
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
+  '/bookings/$id/review': typeof BookingsIdReviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,9 +130,10 @@ export interface FileRoutesByTo {
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
   '/book/$serviceId': typeof BookServiceIdRoute
-  '/bookings/$id': typeof BookingsIdRoute
+  '/bookings/$id': typeof BookingsIdRouteWithChildren
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
+  '/bookings/$id/review': typeof BookingsIdReviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,9 +148,10 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
   '/book/$serviceId': typeof BookServiceIdRoute
-  '/bookings/$id': typeof BookingsIdRoute
+  '/bookings/$id': typeof BookingsIdRouteWithChildren
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
+  '/bookings/$id/review': typeof BookingsIdReviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
+    | '/bookings/$id/review'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
+    | '/bookings/$id/review'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
+    | '/bookings/$id/review'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -311,15 +323,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookServiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bookings/$id/review': {
+      id: '/bookings/$id/review'
+      path: '/review'
+      fullPath: '/bookings/$id/review'
+      preLoaderRoute: typeof BookingsIdReviewRouteImport
+      parentRoute: typeof BookingsIdRoute
+    }
   }
 }
 
+interface BookingsIdRouteChildren {
+  BookingsIdReviewRoute: typeof BookingsIdReviewRoute
+}
+
+const BookingsIdRouteChildren: BookingsIdRouteChildren = {
+  BookingsIdReviewRoute: BookingsIdReviewRoute,
+}
+
+const BookingsIdRouteWithChildren = BookingsIdRoute._addFileChildren(
+  BookingsIdRouteChildren,
+)
+
 interface BookingsRouteChildren {
-  BookingsIdRoute: typeof BookingsIdRoute
+  BookingsIdRoute: typeof BookingsIdRouteWithChildren
 }
 
 const BookingsRouteChildren: BookingsRouteChildren = {
-  BookingsIdRoute: BookingsIdRoute,
+  BookingsIdRoute: BookingsIdRouteWithChildren,
 }
 
 const BookingsRouteWithChildren = BookingsRoute._addFileChildren(

@@ -23,6 +23,8 @@ export type Database = {
           notes: string | null
           payment_method: string
           pro_id: string | null
+          reviewed_at: string | null
+          reviewed_skipped: boolean
           scheduled_at: string | null
           service_id: string | null
           status: string | null
@@ -36,6 +38,8 @@ export type Database = {
           notes?: string | null
           payment_method?: string
           pro_id?: string | null
+          reviewed_at?: string | null
+          reviewed_skipped?: boolean
           scheduled_at?: string | null
           service_id?: string | null
           status?: string | null
@@ -49,6 +53,8 @@ export type Database = {
           notes?: string | null
           payment_method?: string
           pro_id?: string | null
+          reviewed_at?: string | null
+          reviewed_skipped?: boolean
           scheduled_at?: string | null
           service_id?: string | null
           status?: string | null

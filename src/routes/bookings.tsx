@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -74,9 +74,33 @@ export function formatWhen(scheduled: string | null, lang: "en" | "ar") {
 
 function BookingsPage() {
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const [rows, setRows] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Auto-prompt for review when a booking is done and not reviewed/skipped.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("bookings")
+        .select("id")
+        .eq("customer_id", user.id)
+        .eq("status", "done")
+        .is("reviewed_at", null)
+        .eq("reviewed_skipped", false)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.id) {
+        navigate({ to: "/bookings/$id/review", params: { id: data.id } });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [navigate]);
 
   useEffect(() => {
     let cancelled = false;
