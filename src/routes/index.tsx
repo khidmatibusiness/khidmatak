@@ -1,9 +1,34 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+const SUBCAT_EMOJI: Record<string, string> = {
+  cleaning: "🧼", laundry: "🧺", pest: "🪲", painting: "🎨",
+  padel: "🎾", football: "⚽", gym: "🏋️", swim: "🏊", tennis: "🎾",
+  dentist: "🦷", optician: "👓", lab: "🧪",
+  barber: "💈", salon: "💇", hammam: "🛁", spa: "💆",
+};
+const CATEGORY_TINT: Record<string, string> = {
+  home: "oklch(0.97 0.025 158)",
+  sports: "oklch(0.97 0.05 110)",
+  medical: "oklch(0.97 0.025 230)",
+  beauty: "oklch(0.97 0.03 20)",
+};
+
+interface NearbyService {
+  id: string;
+  name_en: string;
+  name_ar: string | null;
+  category: string | null;
+  subcategory: string | null;
+  price: number;
+  pro_id: string | null;
+  pro_name: string;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,12 +47,6 @@ const categories = [
   { id: "beauty", label: { en: "Beauty", ar: "تجميل" }, emoji: "💆", tint: "linear-gradient(160deg, oklch(0.95 0.05 20), oklch(0.99 0.02 20))" },
 ];
 
-const nearYou = [
-  { id: "n1", name: { en: "Biolab Amman", ar: "بايولاب عمّان" }, emoji: "🧪", rating: 4.8, distance: "219 m", price: 12, tint: "oklch(0.97 0.025 158)" },
-  { id: "n2", name: { en: "Classic Barber", ar: "كلاسيك باربر" }, emoji: "💈", rating: 4.8, distance: "219 m", price: 8, tint: "oklch(0.97 0.025 158)" },
-  { id: "n3", name: { en: "Padel Republic", ar: "بادل ريبابليك" }, emoji: "🎾", rating: 4.9, distance: "1.2 km", price: 24, tint: "oklch(0.97 0.05 110)" },
-  { id: "n4", name: { en: "Glow Salon", ar: "صالون جلو" }, emoji: "💇", rating: 4.7, distance: "900 m", price: 18, tint: "oklch(0.97 0.03 20)" },
-];
 
 function HomePage() {
   const { t, lang } = useI18n();
@@ -35,6 +54,39 @@ function HomePage() {
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
+  const [nearby, setNearby] = useState<NearbyService[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: svc } = await supabase
+        .from("services")
+        .select("id, name_en, name_ar, category, subcategory, price, pro_id")
+        .eq("is_active", true)
+        .order("price", { ascending: true })
+        .limit(8);
+      const list = (svc ?? []) as Array<Omit<NearbyService, "pro_name">>;
+      const proIds = Array.from(new Set(list.map((s) => s.pro_id).filter(Boolean) as string[]));
+      const proMap: Record<string, string> = {};
+      if (proIds.length) {
+        const { data: pros } = await supabase
+          .from("users").select("id, full_name").in("id", proIds);
+        for (const p of (pros ?? []) as Array<{ id: string; full_name: string | null }>) {
+          if (p.full_name) proMap[p.id] = p.full_name;
+        }
+      }
+      if (cancelled) return;
+      setNearby(
+        list.map((s) => ({
+          ...s,
+          pro_name: (s.pro_id && proMap[s.pro_id]) || s.name_en,
+        })),
+      );
+      setNearbyLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const toggleFav = (id: string) =>
     setFavs((s) => {
@@ -152,40 +204,55 @@ function HomePage() {
             <MapPin size={14} /> View on map
           </button>
         </div>
-        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
-          {nearYou.map((s) => {
-            const fav = favs.has(s.id);
-            return (
-              <div
-                key={s.id}
-                className="shrink-0 w-44 snap-start rounded-3xl bg-white p-3 border border-border"
-                style={{ boxShadow: "var(--shadow-soft)" }}
-              >
-                <div
-                  className="relative rounded-2xl h-24 flex items-center justify-center mb-3"
-                  style={{ background: s.tint }}
+        {nearbyLoading ? (
+          <div className="py-8 flex justify-center">
+            <Loader2 className="animate-spin text-primary" size={20} />
+          </div>
+        ) : nearby.length === 0 ? (
+          <div className="text-center text-sm text-muted-foreground py-8">
+            {lang === "ar" ? "لا توجد خدمات قريبة بعد." : "No nearby services yet."}
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
+            {nearby.map((s) => {
+              const fav = favs.has(s.id);
+              const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
+              const tint = (s.category && CATEGORY_TINT[s.category]) || "oklch(0.97 0.025 158)";
+              const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
+              return (
+                <Link
+                  key={s.id}
+                  to="/pro/$id"
+                  params={{ id: s.id }}
+                  className="spring-tap shrink-0 w-44 snap-start rounded-3xl bg-white p-3 border border-border text-start"
+                  style={{ boxShadow: "var(--shadow-soft)" }}
                 >
-                  <span className="text-4xl">{s.emoji}</span>
-                  <button
-                    onClick={() => toggleFav(s.id)}
-                    aria-label="Favourite"
-                    className="spring-tap absolute top-2 end-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center"
+                  <div
+                    className="relative rounded-2xl h-24 flex items-center justify-center mb-3"
+                    style={{ background: tint }}
                   >
-                    <Heart size={14} className={fav ? "fill-destructive text-destructive" : "text-muted-foreground"} />
-                  </button>
-                </div>
-                <div className="font-semibold text-sm leading-tight truncate">{s.name[lang]}</div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                  <Star size={12} className="fill-gold text-gold" />
-                  <span className="font-semibold text-foreground">{s.rating.toFixed(1)}</span>
-                  <span>·</span>
-                  <span>{s.distance}</span>
-                </div>
-                <div className="text-xs font-semibold text-primary mt-1.5">{s.price} JOD/visit</div>
-              </div>
-            );
-          })}
-        </div>
+                    <span className="text-4xl">{emoji}</span>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFav(s.id); }}
+                      aria-label="Favourite"
+                      className="spring-tap absolute top-2 end-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center"
+                    >
+                      <Heart size={14} className={fav ? "fill-destructive text-destructive" : "text-muted-foreground"} />
+                    </button>
+                  </div>
+                  <div className="font-semibold text-sm leading-tight truncate">{s.pro_name}</div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                    <Star size={12} className="fill-gold text-gold" />
+                    <span className="font-semibold text-foreground">—</span>
+                    <span>·</span>
+                    <span className="truncate">{displayName}</span>
+                  </div>
+                  <div className="text-xs font-semibold text-primary mt-1.5">{Number(s.price).toFixed(0)} JOD</div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Khidmati Gold */}
