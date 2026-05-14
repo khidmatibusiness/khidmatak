@@ -119,8 +119,6 @@ function ProfilePage() {
       </div>
 
       <div className="glass rounded-3xl divide-y divide-border overflow-hidden">
-        <MenuLink to="/bookings" icon={<Calendar size={18} />} label={lang === "ar" ? "حجوزاتي" : "My Bookings"} />
-        <MenuLink to="/wallet" icon={<WalletIcon size={18} />} label={lang === "ar" ? "المحفظة" : "Wallet"} />
         <MenuButton onClick={() => setShowRefer(true)} icon={<Users size={18} />} label={lang === "ar" ? "ادعُ صديقاً" : "Refer a Friend"} />
         <MenuButton
           onClick={() => setLang(lang === "en" ? "ar" : "en")}
