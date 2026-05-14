@@ -203,19 +203,19 @@ function HomePage() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">Near you</h2>
-          <button
-            onClick={() => toast("Map view — coming soon")}
+          <Link
+            to="/map"
             className="spring-tap rounded-full px-3.5 py-1.5 text-sm font-medium flex items-center gap-1.5"
             style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
           >
             <MapPin size={14} /> View on map
-          </button>
+          </Link>
         </div>
         {nearbyLoading ? (
           <div className="py-8 flex justify-center">
             <Loader2 className="animate-spin text-primary" size={20} />
           </div>
-        ) : nearby.length === 0 ? (
+        ) : filteredNearby.length === 0 ? (
           <div className="text-center text-sm text-muted-foreground py-8">
             {lang === "ar" ? "لا توجد خدمات قريبة بعد." : "No nearby services yet."}
           </div>
