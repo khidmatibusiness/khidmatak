@@ -45,7 +45,7 @@ function WalletPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [txs, setTxs] = useState<Tx[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sheet, setSheet] = useState<null | "topup" | "send" | "split">(null);
+  const [sheet, setSheet] = useState<null | "topup" | "send" | "split" | "groups">(null);
 
   const load = async () => {
     setLoading(true);
