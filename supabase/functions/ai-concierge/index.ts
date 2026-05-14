@@ -1,13 +1,15 @@
 // Lovable AI-powered Khidmati concierge.
 // Accepts { messages: [{ role, content }], lang? } and returns { message }.
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_PROMPT = `You are the Khidmati AI Concierge — a warm, concise assistant for a Jordanian on-demand services app serving West Amman.
+const BASE_SYSTEM_PROMPT = `You are the Khidmati AI Concierge — a warm, concise assistant for a Jordanian on-demand services app serving West Amman.
 
 Khidmati helps customers find and book trusted local pros across these categories:
 - Home (plumbers, electricians, cleaners, AC techs)
