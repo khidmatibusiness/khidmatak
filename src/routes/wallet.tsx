@@ -435,3 +435,157 @@ function SplitBillSheet({ balance, onDone }: { balance: number; onDone: () => vo
     </div>
   );
 }
+
+function GroupsSheet({ onClose }: { onClose: () => void }) {
+  const [groups, setGroups] = useState<SplitGroup[]>([]);
+  const [editing, setEditing] = useState<SplitGroup | null>(null);
+
+  useEffect(() => { setGroups(getGroups()); }, []);
+
+  const remove = (id: string) => {
+    const next = groups.filter((g) => g.id !== id);
+    setGroups(next); saveGroups(next);
+    toast.success("Group deleted");
+  };
+
+  const persist = (g: SplitGroup) => {
+    const all = getGroups();
+    const i = all.findIndex((x) => x.id === g.id);
+    if (i >= 0) all[i] = g; else all.unshift(g);
+    saveGroups(all); setGroups(all); setEditing(null);
+    toast.success("Group saved");
+  };
+
+  if (editing) {
+    return <GroupEditor group={editing} onCancel={() => setEditing(null)} onSave={persist} />;
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-lg">Split groups</h3>
+        <button onClick={onClose} className="spring-tap p-1.5 rounded-full hover:bg-muted" aria-label="Close">
+          <X size={18} />
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground -mt-1">
+        Save groups of friends with their wallet codes. Use them to split a bill or a booking instantly.
+      </p>
+
+      {groups.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          No groups yet. Create your first one below.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {groups.map((g) => (
+            <div key={g.id} className="glass rounded-2xl p-3 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary-tint text-primary flex items-center justify-center">
+                <Users size={16} />
+              </div>
+              <button onClick={() => setEditing(g)} className="flex-1 min-w-0 text-start">
+                <div className="font-semibold text-sm truncate">{g.name}</div>
+                <div className="text-[11px] text-muted-foreground">{g.members.length + 1} members (incl. you)</div>
+              </button>
+              <button onClick={() => remove(g.id)} className="spring-tap p-2 rounded-full hover:bg-muted text-destructive" aria-label="Delete">
+                <Trash2 size={15} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={() => setEditing({ id: crypto.randomUUID(), name: "", members: [] })}
+        className="spring-tap w-full rounded-2xl py-3 text-sm font-semibold text-white"
+        style={{ background: "var(--gradient-primary)" }}
+      >
+        + New group
+      </button>
+    </div>
+  );
+}
+
+function GroupEditor({ group, onCancel, onSave }: {
+  group: SplitGroup; onCancel: () => void; onSave: (g: SplitGroup) => void;
+}) {
+  const [name, setName] = useState(group.name);
+  const [members, setMembers] = useState<SplitMember[]>(group.members);
+  const [code, setCode] = useState("");
+  const [looking, setLooking] = useState(false);
+
+  const addMember = async () => {
+    const c = code.trim().toUpperCase();
+    if (!c) return toast.error("Enter a wallet code");
+    if (members.some((m) => m.code === c)) return toast.error("Already in group");
+    setLooking(true);
+    const { data, error } = await supabase.rpc("lookup_wallet_by_code", { p_code: c });
+    setLooking(false);
+    if (error) return toast.error(error.message);
+    if (!data) return toast.error("No wallet found");
+    const info = data as { full_name: string };
+    setMembers((m) => [...m, { code: c, name: info.full_name }]);
+    setCode("");
+  };
+
+  const save = () => {
+    if (!name.trim()) return toast.error("Name your group");
+    if (members.length === 0) return toast.error("Add at least one member");
+    onSave({ ...group, name: name.trim(), members });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-lg">{group.name ? "Edit group" : "New group"}</h3>
+        <button onClick={onCancel} className="text-xs text-muted-foreground spring-tap">Cancel</button>
+      </div>
+      <div>
+        <div className="text-xs text-muted-foreground mb-1.5">Group name</div>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Padel buddies"
+          className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-primary"
+        />
+      </div>
+      <div>
+        <div className="text-xs text-muted-foreground mb-1.5">Add member by wallet code</div>
+        <div className="flex gap-2">
+          <input
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="ABCD1234"
+            className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-mono uppercase outline-none focus:border-primary"
+          />
+          <button onClick={addMember} disabled={looking} className="spring-tap rounded-2xl px-4 text-sm font-semibold bg-primary-tint text-primary">
+            {looking ? <Loader2 size={16} className="animate-spin" /> : "Add"}
+          </button>
+        </div>
+      </div>
+
+      {members.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="text-xs text-muted-foreground">Members</div>
+          {members.map((m) => (
+            <div key={m.code} className="flex items-center justify-between rounded-xl bg-white border border-border px-3 py-2">
+              <div>
+                <div className="text-sm font-semibold">{m.name}</div>
+                <div className="text-[11px] text-muted-foreground font-mono">{m.code}</div>
+              </div>
+              <button onClick={() => setMembers((arr) => arr.filter((x) => x.code !== m.code))}
+                className="spring-tap p-1.5 rounded-full hover:bg-muted text-destructive">
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button onClick={save} className="spring-tap w-full rounded-2xl py-3 text-sm font-semibold text-white"
+        style={{ background: "var(--gradient-primary)" }}>
+        Save group
+      </button>
+    </div>
+  );
+}
