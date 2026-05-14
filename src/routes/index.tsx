@@ -53,7 +53,6 @@ function HomePage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
-  const [sosKind, setSosKind] = useState<string | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
