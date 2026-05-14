@@ -196,6 +196,7 @@ function WalletPage() {
             {sheet === "topup" && <TopUpSheet />}
             {sheet === "send" && <SendByCodeSheet onDone={() => { setSheet(null); load(); }} />}
             {sheet === "split" && <SplitBillSheet balance={balance} onDone={() => { setSheet(null); load(); }} />}
+            {sheet === "groups" && <GroupsSheet onClose={() => setSheet(null)} />}
           </div>
         </div>
       )}
