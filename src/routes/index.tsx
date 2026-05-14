@@ -105,6 +105,26 @@ function HomePage() {
   const toggleFav = (id: string) => setFavs(new Set(toggleFavStore(id)));
 
   const q = query.trim().toLowerCase();
+  const normalizeQuery = (value: string) => value.toLowerCase().replace(/[^a-z0-9\u0600-\u06ff]+/g, " ").trim();
+  const typoAliases: Record<string, string> = {
+    padl: "padel",
+    paddel: "padel",
+    badel: "padel",
+    jds: "",
+    jd: "",
+    jod: "",
+    dinar: "",
+    dinars: "",
+  };
+  const expandSearchText = (value: string) => {
+    const normalized = normalizeQuery(value);
+    const expandedWords = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => typoAliases[word] ?? word)
+      .filter(Boolean);
+    return [normalized, expandedWords.join(" ")].filter(Boolean).join(" ");
+  };
   // parse budget: "under 30", "below 25", "30 jds", "<= 20", "for 30"
   const budgetMatch = q.match(/(?:under|below|less than|<=?|for|at|max)\s*(\d+)|(\d+)\s*(?:jod|jds|jd|dinar)/);
   const budget = budgetMatch ? Number(budgetMatch[1] ?? budgetMatch[2]) : null;
@@ -116,10 +136,14 @@ function HomePage() {
     ? nearby.filter((s) => {
         if (budget !== null && Number(s.price) > budget) return false;
         if (isFun && s.subcategory && FUN_SUBCATS.has(s.subcategory)) return true;
-        const stripped = q.replace(budgetMatch?.[0] ?? "", "").replace(/\b(for|under|below|jod|jds|jd)\b/g, "").trim();
+        const stripped = expandSearchText(
+          q
+            .replace(budgetMatch?.[0] ?? "", "")
+            .replace(/\b(for|under|below|less than|at|max|jod|jds|jd|dinar|dinars|near me)\b/g, " "),
+        );
         if (!stripped) return budget !== null ? true : isFun;
         return [s.name_en, s.name_ar ?? "", s.pro_name, s.category ?? "", s.subcategory ?? ""]
-          .some((v) => v.toLowerCase().includes(stripped));
+          .some((v) => expandSearchText(v).includes(stripped));
       })
     : nearby.slice(0, 8);
 
@@ -153,10 +177,6 @@ function HomePage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-
-          if (query.trim()) {
-            navigate({ to: "/concierge", search: { q: query.trim() } });
-          }
         }}
         className="glass rounded-full flex items-center gap-2 pl-5 pr-1.5 py-1.5"
       >
