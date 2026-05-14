@@ -54,20 +54,50 @@ const nearYou = [
   { id: "n4", name: { en: "Glow Salon", ar: "صالون جلو" }, emoji: "💇", rating: 4.7, distance: "900 m", price: 18, tint: "oklch(0.97 0.03 20)" },
 ];
 
+const nearByCacheKey = "khidmati:nearby";
+
 function HomePage() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
+  const [nearby, setNearby] = useState<NearbyService[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(true);
 
-  const toggleFav = (id: string) =>
-    setFavs((s) => {
-      const n = new Set(s);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: svc } = await supabase
+        .from("services")
+        .select("id, name_en, name_ar, category, subcategory, price, pro_id")
+        .eq("is_active", true)
+        .order("price", { ascending: true })
+        .limit(8);
+      const list = (svc ?? []) as Array<Omit<NearbyService, "pro_name">>;
+      const proIds = Array.from(new Set(list.map((s) => s.pro_id).filter(Boolean) as string[]));
+      const proMap: Record<string, string> = {};
+      if (proIds.length) {
+        const { data: pros } = await supabase
+          .from("users").select("id, full_name").in("id", proIds);
+        for (const p of (pros ?? []) as Array<{ id: string; full_name: string | null }>) {
+          if (p.full_name) proMap[p.id] = p.full_name;
+        }
+      }
+      if (cancelled) return;
+      setNearby(
+        list.map((s) => ({
+          ...s,
+          pro_name: (s.pro_id && proMap[s.pro_id]) || s.name_en,
+        })),
+      );
+      setNearbyLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // suppress unused-var warning
+  void nearByCacheKey;
 
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
