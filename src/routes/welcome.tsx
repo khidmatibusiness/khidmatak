@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/welcome")({
 
 function WelcomePage() {
   const { t } = useI18n();
-  const navigate = useNavigate();
+
 
   return (
     <div className="min-h-screen flex flex-col px-6 pt-16 pb-10 animate-fade-up">
@@ -39,19 +39,19 @@ function WelcomePage() {
       </div>
 
       <div className="space-y-3">
-        <button
-          onClick={() => { toast.success("Account created (demo)"); navigate({ to: "/" }); }}
+        <Link
+          to="/signup"
           className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white flex items-center justify-center gap-2"
           style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
         >
           {t("signup")} <ArrowRight size={16} className="rtl:rotate-180" />
-        </button>
-        <button
-          onClick={() => { toast.success("Logged in (demo)"); navigate({ to: "/" }); }}
-          className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold border border-border bg-white"
+        </Link>
+        <Link
+          to="/login"
+          className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold border border-border bg-white text-center"
         >
           {t("login")}
-        </button>
+        </Link>
         <Link
           to="/"
           className="spring-tap block w-full text-center rounded-2xl py-3 text-sm font-medium text-primary"
