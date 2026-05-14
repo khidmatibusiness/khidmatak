@@ -187,6 +187,7 @@ function WalletPage() {
             <div className="mx-auto h-1.5 w-10 rounded-full bg-muted mb-4" />
             {sheet === "topup" && <TopUpSheet />}
             {sheet === "send" && <SendByCodeSheet onDone={() => { setSheet(null); load(); }} />}
+            {sheet === "split" && <SplitBillSheet balance={balance} onDone={() => { setSheet(null); load(); }} />}
           </div>
         </div>
       )}
