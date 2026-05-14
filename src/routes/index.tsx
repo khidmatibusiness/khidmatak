@@ -254,7 +254,13 @@ function HomePage() {
           </div>
         ) : filteredNearby.length === 0 ? (
           <div className="text-center text-sm text-muted-foreground py-8">
-            {lang === "ar" ? "لا توجد خدمات قريبة بعد." : "No nearby services yet."}
+            {q
+              ? lang === "ar"
+                ? "ما لقينا خدمات تطابق بحثك. جرّب كلمات ثانية."
+                : "No services match your search. Try another keyword."
+              : lang === "ar"
+                ? "لا توجد خدمات قريبة بعد."
+                : "No nearby services yet."}
           </div>
         ) : (
           <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
@@ -396,6 +402,9 @@ function HomePage() {
               })}
               {nearby.length === 0 && (
                 <div className="text-center text-sm text-muted-foreground py-6">No services available.</div>
+              )}
+              {nearby.length > 0 && filteredNearby.length === 0 && (
+                <div className="text-center text-sm text-muted-foreground py-6">No matches for this search.</div>
               )}
             </div>
 
