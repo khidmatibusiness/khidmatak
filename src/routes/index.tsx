@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2 } from "lucide-react";
+import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { toast } from "sonner";
@@ -52,6 +52,8 @@ function HomePage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
+  const [sosKind, setSosKind] = useState<string | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(true);
@@ -103,6 +105,15 @@ function HomePage() {
       )
     : nearby;
 
+  const sosKinds = [
+    { id: "plumber", label: "Plumber", emoji: "🔧" },
+    { id: "electrician", label: "Electrician", emoji: "⚡" },
+    { id: "locksmith", label: "Locksmith", emoji: "🔑" },
+    { id: "tow", label: "Tow / Mechanic", emoji: "🚗" },
+    { id: "ac", label: "AC Repair", emoji: "❄️" },
+    { id: "medical", label: "Medical", emoji: "🚑" },
+  ];
+
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
       {/* header */}
@@ -117,7 +128,7 @@ function HomePage() {
         </div>
         <div className="flex items-center gap-2.5 pt-1">
           <button
-            onClick={() => setSosOpen((v) => !v)}
+            onClick={() => setSosOpen(true)}
             aria-label="SOS"
             className="spring-tap relative w-12 h-12 rounded-full flex items-center justify-center text-white animate-pulse-ring"
             style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
@@ -128,31 +139,11 @@ function HomePage() {
         </div>
       </div>
 
-      {/* SOS quick-pick sheet */}
-      {sosOpen && (
-        <div className="glass-tint rounded-3xl p-4 grid grid-cols-2 gap-2 animate-fade-up">
-          {[
-            { e: "🔧", l: "Plumber" },
-            { e: "⚡", l: "Electrician" },
-            { e: "🚗", l: "Tow truck" },
-            { e: "🩹", l: "First aid" },
-          ].map((x) => (
-            <button
-              key={x.l}
-              onClick={() => { toast.success(`${x.l} dispatched — ETA 12 min`); setSosOpen(false); }}
-              className="spring-tap glass rounded-2xl p-3 text-sm font-medium flex items-center gap-2"
-            >
-              <span className="text-xl">{x.e}</span> {x.l}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* search + Ask AI */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (query.trim()) navigate({ to: "/concierge", search: { q: query.trim() } });
+          // Normal search just filters in place — already reactive
         }}
         className="glass rounded-full flex items-center gap-2 pl-5 pr-1.5 py-1.5"
       >
@@ -165,7 +156,7 @@ function HomePage() {
         />
         <button
           type="button"
-          onClick={() => navigate({ to: "/concierge", search: query.trim() ? { q: query.trim() } : {} })}
+          onClick={() => setAiOpen(true)}
           className="spring-tap shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
         >
@@ -290,6 +281,154 @@ function HomePage() {
           {t("upgrade")}
         </button>
       </div>
+
+      {/* SOS modal */}
+      {sosOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 animate-fade-up" onClick={() => setSosOpen(false)}>
+          <div
+            className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-8 space-y-5"
+            onClick={(e) => e.stopPropagation()}
+            style={{ boxShadow: "var(--shadow-float)" }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-white"
+                  style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
+                >
+                  <Siren size={18} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg leading-tight">SOS Emergency</div>
+                </div>
+              </div>
+              <button onClick={() => setSosOpen(false)} aria-label="Close" className="text-muted-foreground p-1">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="text-sm text-muted-foreground -mt-2">
+              Broadcast to nearest verified providers. Urgency fee applies.
+            </div>
+            <div className="grid grid-cols-3 gap-2.5">
+              {sosKinds.map((k) => {
+                const active = sosKind === k.id;
+                return (
+                  <button
+                    key={k.id}
+                    onClick={() => setSosKind(k.id)}
+                    className={`spring-tap rounded-2xl p-3 flex flex-col items-center gap-1.5 border ${active ? "border-primary bg-primary-tint" : "border-border bg-white"}`}
+                    style={{ background: active ? "var(--color-primary-tint)" : undefined }}
+                  >
+                    <span className="text-2xl">{k.emoji}</span>
+                    <span className="text-xs font-semibold text-center leading-tight">{k.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              disabled={!sosKind}
+              onClick={() => {
+                if (!sosKind) return;
+                setSosOpen(false);
+                navigate({ to: "/sos/$kind", params: { kind: sosKind } });
+              }}
+              className="spring-tap w-full rounded-full py-3.5 font-semibold text-white disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, oklch(0.65 0.22 22), oklch(0.55 0.24 18))" }}
+            >
+              Send emergency request
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ask AI suggestions sheet */}
+      {aiOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 animate-fade-up" onClick={() => setAiOpen(false)}>
+          <div
+            className="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 space-y-4 max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+            style={{ boxShadow: "var(--shadow-float)" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <Sparkles size={16} />
+                </div>
+                <div>
+                  <div className="font-bold">AI suggestions</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {query.trim() ? `Picks for "${query.trim()}"` : "Top-rated near you"}
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setAiOpen(false)} aria-label="Close" className="text-muted-foreground p-1">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* quick chips */}
+            <div className="flex gap-2 flex-wrap">
+              {["plumber", "padel", "barber", "lab test", "AC repair"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setQuery(s)}
+                  className="spring-tap text-xs rounded-full px-3 py-1.5 bg-primary-tint text-primary font-medium"
+                  style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              {(filteredNearby.length ? filteredNearby : nearby).slice(0, 8).map((s) => {
+                const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
+                const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
+                return (
+                  <Link
+                    key={s.id}
+                    to="/pro/$id"
+                    params={{ id: s.id }}
+                    onClick={() => setAiOpen(false)}
+                    className="spring-tap glass rounded-2xl p-3 flex items-center gap-3"
+                  >
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
+                      style={{ background: "var(--color-primary-tint)" }}
+                    >
+                      {emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm truncate">{s.pro_name}</div>
+                      <div className="text-[11px] text-muted-foreground truncate capitalize">
+                        {s.category ?? "Service"} · {displayName}
+                      </div>
+                    </div>
+                    <div className="text-sm font-bold text-primary shrink-0">{Number(s.price).toFixed(0)} JOD</div>
+                  </Link>
+                );
+              })}
+              {nearby.length === 0 && (
+                <div className="text-center text-sm text-muted-foreground py-6">No services available.</div>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setAiOpen(false);
+                navigate({ to: "/concierge", search: query.trim() ? { q: query.trim() } : {} });
+              }}
+              className="spring-tap w-full rounded-full py-3 text-sm font-semibold text-white"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              Chat with AI Concierge instead
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
