@@ -38,6 +38,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Book trusted home, sports, medical and beauty services across West Amman." },
     ],
   }),
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && !localStorage.getItem("khidmati_launched")) {
+      throw (require("@tanstack/react-router") as any).redirect({ to: "/welcome" });
+    }
+  },
   component: HomePage,
 });
 
