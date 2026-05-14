@@ -57,6 +57,49 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Fetch live catalog (services + pros + avg ratings) for grounding
+    let catalogBlock = "";
+    try {
+      const supaUrl = Deno.env.get("SUPABASE_URL");
+      const supaKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supaUrl && supaKey) {
+        const supa = createClient(supaUrl, supaKey);
+        const [{ data: services }, { data: users }, { data: reviews }] = await Promise.all([
+          supa.from("services").select("id,name_en,name_ar,category,subcategory,price,duration_mins,pro_id").eq("is_active", true).limit(200),
+          supa.from("users").select("id,full_name"),
+          supa.from("reviews").select("pro_id,rating"),
+        ]);
+        const userMap = new Map<string, string>((users ?? []).map((u: { id: string; full_name: string | null }) => [u.id, u.full_name ?? ""]));
+        const ratings = new Map<string, { sum: number; n: number }>();
+        for (const r of (reviews ?? []) as Array<{ pro_id: string; rating: number }>) {
+          if (!r.pro_id) continue;
+          const cur = ratings.get(r.pro_id) ?? { sum: 0, n: 0 };
+          cur.sum += r.rating ?? 0; cur.n += 1;
+          ratings.set(r.pro_id, cur);
+        }
+        const rows = (services ?? []).map((s: { id: string; name_en: string; name_ar: string | null; category: string | null; subcategory: string | null; price: number; duration_mins: number | null; pro_id: string | null }) => {
+          const r = s.pro_id ? ratings.get(s.pro_id) : null;
+          const avg = r && r.n ? (r.sum / r.n).toFixed(1) : "—";
+          return {
+            id: s.id,
+            name: s.name_en,
+            name_ar: s.name_ar,
+            pro: s.pro_id ? userMap.get(s.pro_id) ?? "Khidmati pro" : "Khidmati pro",
+            category: s.category,
+            subcategory: s.subcategory,
+            price_jod: Number(s.price),
+            duration_mins: s.duration_mins,
+            rating: avg,
+          };
+        });
+        catalogBlock = `\n\nLIVE CATALOG (JSON, ${rows.length} active services):\n${JSON.stringify(rows)}`;
+      }
+    } catch (e) {
+      console.error("catalog fetch failed", e);
+    }
+
+    const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + catalogBlock;
+
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
