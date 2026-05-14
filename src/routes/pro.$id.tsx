@@ -112,7 +112,7 @@ function ProProfilePage() {
   const isAvailable = service.is_active !== false;
 
   const handleBook = () => {
-    navigate({ to: "/book/$serviceId", params: { serviceId: service!.id } });
+    setBookOpen(true);
   };
 
   return (
