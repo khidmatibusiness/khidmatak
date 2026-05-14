@@ -105,14 +105,6 @@ function HomePage() {
       )
     : nearby;
 
-  const sosKinds = [
-    { id: "plumber", label: "Plumber", emoji: "🔧" },
-    { id: "electrician", label: "Electrician", emoji: "⚡" },
-    { id: "locksmith", label: "Locksmith", emoji: "🔑" },
-    { id: "tow", label: "Tow / Mechanic", emoji: "🚗" },
-    { id: "ac", label: "AC Repair", emoji: "❄️" },
-    { id: "medical", label: "Medical", emoji: "🚑" },
-  ];
 
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
