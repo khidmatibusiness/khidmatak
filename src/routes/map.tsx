@@ -152,7 +152,7 @@ function MapPage() {
 
       {/* Map */}
       <div className="h-[62vh] w-full">
-        {loading ? (
+        {loading || !mounted ? (
           <div className="h-full w-full flex items-center justify-center bg-muted">
             <Loader2 className="animate-spin text-primary" />
           </div>
