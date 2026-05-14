@@ -15,7 +15,7 @@ export const Route = createFileRoute("/welcome")({
 
 function WelcomePage() {
   const { t } = useI18n();
-  const navigate = useNavigate();
+
 
   return (
     <div className="min-h-screen flex flex-col px-6 pt-16 pb-10 animate-fade-up">
