@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Plus, Send, Users, ArrowUpRight, ArrowDownLeft, PiggyBank, Eye, EyeOff,
-  X, Check, Clock, Trash2, UserPlus,
+  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { transactions } from "@/lib/mock-data";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/wallet")({
@@ -18,221 +17,153 @@ export const Route = createFileRoute("/wallet")({
   component: WalletPage,
 });
 
-interface PendingReq {
+const WHATSAPP_NUMBER = "962790000000"; // TODO: replace with real support number
+
+interface Wallet {
   id: string;
-  type: "incoming" | "outgoing";
-  who: string;
-  emoji: string;
+  balance: number;
+  wallet_code: string | null;
+}
+
+interface Tx {
+  id: string;
+  type: string | null;
   amount: number;
-  note: string;
+  created_at: string;
+  from_wallet_id: string | null;
+  to_wallet_id: string | null;
+  note: string | null;
 }
-
-interface SplitGroup {
-  id: string;
-  name: string;
-  emoji: string;
-  codes: string[];
-}
-
-const initialPending: PendingReq[] = [
-  { id: "p1", type: "incoming", who: "Omar", emoji: "🎾", amount: 6, note: "Padel split" },
-  { id: "p2", type: "outgoing", who: "Lina", emoji: "🍕", amount: 4.5, note: "Pizza last night" },
-];
-
-const initialGroups: SplitGroup[] = [
-  { id: "g1", name: "Padel gang", emoji: "🎾", codes: ["KH-OMR-22", "KH-LNA-71", "KH-YZN-04"] },
-  { id: "g2", name: "Roomies", emoji: "🏠", codes: ["KH-SRA-19", "KH-MNA-88"] },
-];
 
 function WalletPage() {
   const { t } = useI18n();
   const [showCode, setShowCode] = useState(false);
-  const [pending, setPending] = useState<PendingReq[]>(initialPending);
-  const [groups, setGroups] = useState<SplitGroup[]>(initialGroups);
-  const [sheet, setSheet] = useState<null | "topup" | "transfer" | "split" | "newGroup">(null);
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupCodes, setNewGroupCodes] = useState<string[]>([""]);
-  const balance = 142.75;
-  const roundUp = 8.4;
-  const roundUpGoal = 20;
-  const pct = Math.min(100, (roundUp / roundUpGoal) * 100);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [txs, setTxs] = useState<Tx[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sheet, setSheet] = useState<null | "topup" | "send">(null);
 
-  const handleResolve = (id: string, action: "accept" | "decline" | "withdraw") => {
-    setPending((p) => p.filter((x) => x.id !== id));
-    toast.success(
-      action === "accept" ? "Payment accepted" : action === "decline" ? "Request declined" : "Funds withdrawn"
-    );
+  const load = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setLoading(false); return; }
+    const { data: w } = await supabase
+      .from("wallets")
+      .select("id,balance,wallet_code")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (w) {
+      setWallet({ id: w.id, balance: Number(w.balance ?? 0), wallet_code: w.wallet_code });
+      const { data: tx } = await supabase
+        .from("wallet_transactions")
+        .select("id,type,amount,created_at,from_wallet_id,to_wallet_id,note")
+        .or(`from_wallet_id.eq.${w.id},to_wallet_id.eq.${w.id}`)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      setTxs((tx ?? []).map((r) => ({ ...r, amount: Number(r.amount) })));
+    }
+    setLoading(false);
   };
 
-  const saveGroup = () => {
-    if (!newGroupName.trim()) return toast.error("Add a group name");
-    const codes = newGroupCodes.map((c) => c.trim()).filter(Boolean);
-    if (codes.length < 1) return toast.error("Add at least one code");
-    setGroups((g) => [
-      { id: `g${Date.now()}`, name: newGroupName, emoji: "👥", codes },
-      ...g,
-    ]);
-    setNewGroupName("");
-    setNewGroupCodes([""]);
-    setSheet("split");
-    toast.success("Group saved");
-  };
+  useEffect(() => { load(); }, []);
+
+  const balance = wallet?.balance ?? 0;
 
   return (
     <>
-    <div className="px-5 pt-8 space-y-5 animate-fade-up">
-      <h1 className="text-2xl font-bold tracking-tight">{t("wallet")}</h1>
+      <div className="px-5 pt-8 pb-8 space-y-5 animate-fade-up">
+        <h1 className="text-2xl font-bold tracking-tight">{t("wallet")}</h1>
 
-      {/* balance card */}
-      <div
-        className="rounded-3xl p-5 text-white relative overflow-hidden"
-        style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
-      >
-        <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/15" />
-        <div className="absolute -left-6 -bottom-12 w-40 h-40 rounded-full bg-white/10" />
-        <div className="relative">
-          <div className="text-xs opacity-90">{t("balance")}</div>
-          <div className="text-4xl font-bold tracking-tight mt-1">
-            {balance.toFixed(2)} <span className="text-base font-medium opacity-80">JOD</span>
-          </div>
-          <div className="mt-4 glass-strong rounded-2xl p-3 flex items-center justify-between text-foreground">
-            <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("privateCode")}</div>
-              <div className="font-mono text-sm font-semibold">{showCode ? "KH-7F2A-91X" : "•••• •••• ••"}</div>
+        {/* balance card */}
+        <div
+          className="rounded-3xl p-5 text-white relative overflow-hidden"
+          style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
+        >
+          <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/15" />
+          <div className="absolute -left-6 -bottom-12 w-40 h-40 rounded-full bg-white/10" />
+          <div className="relative">
+            <div className="text-xs opacity-90">{t("balance")}</div>
+            <div className="text-4xl font-bold tracking-tight mt-1">
+              {balance.toFixed(2)} <span className="text-base font-medium opacity-80">JOD</span>
             </div>
-            <button onClick={() => setShowCode((v) => !v)} className="spring-tap p-2 rounded-xl bg-primary-tint text-primary">
-              {showCode ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+            <div className="mt-4 glass-strong rounded-2xl p-3 flex items-center justify-between text-foreground">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("privateCode")}</div>
+                <div className="font-mono text-sm font-semibold">
+                  {showCode ? (wallet?.wallet_code ?? "—") : "•••• •••• ••"}
+                </div>
+              </div>
+              <button onClick={() => setShowCode((v) => !v)} className="spring-tap p-2 rounded-xl bg-primary-tint text-primary">
+                {showCode ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* actions */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { icon: <Plus size={20} />, label: t("topUp"), key: "topup" as const },
-          { icon: <Send size={20} />, label: t("transfer"), key: "transfer" as const },
-          { icon: <Users size={20} />, label: t("split"), key: "split" as const },
-        ].map((a) => (
+        {/* actions */}
+        <div className="grid grid-cols-2 gap-3">
           <button
-            key={a.key}
-            onClick={() => setSheet(a.key)}
-            className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
+            onClick={() => setSheet("topup")}
+            className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
           >
-            <span className="rounded-xl bg-primary-tint text-primary p-2">{a.icon}</span>
-            <span className="text-xs font-medium">{a.label}</span>
+            <span className="rounded-xl bg-primary-tint text-primary p-2"><Plus size={20} /></span>
+            <span className="text-xs font-medium">{t("topUp")}</span>
           </button>
-        ))}
-      </div>
-
-      {/* round up */}
-      <div className="glass-tint rounded-3xl p-4 space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-primary text-primary-foreground p-2.5">
-            <PiggyBank size={20} />
-          </div>
-          <div className="flex-1">
-            <div className="text-sm font-semibold">{t("roundUp")}</div>
-            <div className="text-xs text-muted-foreground">{roundUp.toFixed(2)} / {roundUpGoal} JOD</div>
-          </div>
           <button
-            onClick={() => toast.success(`${roundUp.toFixed(2)} JOD moved to wallet`)}
-            className="spring-tap text-xs font-semibold text-primary"
+            onClick={() => setSheet("send")}
+            className="spring-tap glass rounded-2xl p-4 flex flex-col items-center gap-1.5"
           >
-            {t("transferToMain")}
+            <span className="rounded-xl bg-primary-tint text-primary p-2"><Send size={20} /></span>
+            <span className="text-xs font-medium">Send by code</span>
           </button>
         </div>
-        <div className="h-2 rounded-full bg-white overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--gradient-primary)" }} />
-        </div>
-      </div>
 
-      {/* pending requests */}
-      {pending.length > 0 && (
+        {/* transactions */}
         <div>
-          <h2 className="text-sm font-semibold mb-2 px-1 flex items-center gap-2">
-            <Clock size={14} className="text-primary" /> {t("pendingReq")}
-          </h2>
+          <h2 className="text-sm font-semibold mb-2 px-1">{t("recent")}</h2>
           <div className="glass rounded-3xl divide-y divide-border overflow-hidden">
-            {pending.map((p) => (
-              <div key={p.id} className="p-3.5 space-y-2.5">
-                <div className="flex items-center gap-3">
-                  <div className="text-xl">{p.emoji}</div>
+            {loading && (
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+            )}
+            {!loading && txs.length === 0 && (
+              <div className="text-center text-sm text-muted-foreground py-8">No transactions yet</div>
+            )}
+            {!loading && txs.map((tx) => {
+              const credit = tx.to_wallet_id === wallet?.id;
+              const date = new Date(tx.created_at).toLocaleDateString(undefined, {
+                month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+              });
+              const label = describeTx(tx.type, credit);
+              return (
+                <div key={tx.id} className="flex items-center gap-3 p-3.5">
+                  <div
+                    className="rounded-xl p-2"
+                    style={{
+                      background: credit ? "var(--color-primary-tint)" : "color-mix(in oklab, var(--color-destructive) 12%, transparent)",
+                      color: credit ? "var(--color-primary)" : "var(--color-destructive)",
+                    }}
+                  >
+                    {credit ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">
-                      {p.type === "incoming" ? `${p.who} requested` : `Sent to ${p.who}`}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {p.note} · {p.type === "outgoing" ? t("awaiting") : ""}
-                    </div>
+                    <div className="text-sm font-medium truncate">{label}</div>
+                    <div className="text-[11px] text-muted-foreground">{date}{tx.note ? ` · ${tx.note}` : ""}</div>
                   </div>
                   <div
                     className="text-sm font-semibold"
-                    style={{ color: p.type === "incoming" ? "var(--color-destructive)" : "var(--color-primary)" }}
+                    style={{ color: credit ? "var(--color-primary)" : "var(--color-destructive)" }}
                   >
-                    {p.type === "incoming" ? "-" : "+"}{p.amount.toFixed(2)}
+                    {credit ? "+" : "-"}{tx.amount.toFixed(2)}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  {p.type === "incoming" ? (
-                    <>
-                      <button
-                        onClick={() => handleResolve(p.id, "decline")}
-                        className="spring-tap flex-1 rounded-xl py-2 text-xs font-medium border border-border flex items-center justify-center gap-1"
-                      >
-                        <X size={13} /> {t("decline")}
-                      </button>
-                      <button
-                        onClick={() => handleResolve(p.id, "accept")}
-                        className="spring-tap flex-1 rounded-xl py-2 text-xs font-semibold bg-primary text-primary-foreground flex items-center justify-center gap-1"
-                      >
-                        <Check size={13} /> {t("accept")}
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => handleResolve(p.id, "withdraw")}
-                      className="spring-tap flex-1 rounded-xl py-2 text-xs font-semibold bg-primary-tint text-primary flex items-center justify-center gap-1"
-                    >
-                      <ArrowDownLeft size={13} /> {t("withdraw")}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
-      )}
-
-      {/* transactions */}
-      <div>
-        <h2 className="text-sm font-semibold mb-2 px-1">{t("recent")}</h2>
-        <div className="glass rounded-3xl divide-y divide-border overflow-hidden">
-          {transactions.map((tx) => {
-            const credit = tx.amount > 0;
-            return (
-              <div key={tx.id} className="flex items-center gap-3 p-3.5">
-                <div className="text-xl">{tx.emoji}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{tx.label}</div>
-                  <div className="text-[11px] text-muted-foreground">{tx.date}</div>
-                </div>
-                <div
-                  className="text-sm font-semibold flex items-center gap-1"
-                  style={{ color: credit ? "var(--color-primary)" : "var(--color-destructive)" }}
-                >
-                  {credit ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}
-                  {credit ? "+" : ""}
-                  {tx.amount.toFixed(2)}
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
-    </div>
 
-      {/* SHEETS — outside animated wrapper so position:fixed escapes its transform */}
       {sheet && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center" onClick={() => setSheet(null)}>
           <div className="absolute inset-0 bg-black/40 animate-fade-up" />
@@ -241,31 +172,8 @@ function WalletPage() {
             className="relative w-full max-w-md glass-strong rounded-t-3xl p-5 pb-8 animate-fade-up max-h-[85vh] overflow-y-auto"
           >
             <div className="mx-auto h-1.5 w-10 rounded-full bg-muted mb-4" />
-
-            {sheet === "topup" && (
-              <TopUpSheet onDone={() => setSheet(null)} />
-            )}
-            {sheet === "transfer" && (
-              <TransferSheet onDone={() => setSheet(null)} />
-            )}
-            {sheet === "split" && (
-              <SplitSheet
-                groups={groups}
-                onDelete={(id) => { setGroups((g) => g.filter((x) => x.id !== id)); toast("Group removed"); }}
-                onUseGroup={(g) => { toast.success(`Saved as default: ${g.name}`); setSheet(null); }}
-                onCreate={() => setSheet("newGroup")}
-              />
-            )}
-            {sheet === "newGroup" && (
-              <NewGroupSheet
-                name={newGroupName}
-                setName={setNewGroupName}
-                codes={newGroupCodes}
-                setCodes={setNewGroupCodes}
-                onSave={saveGroup}
-                onBack={() => setSheet("split")}
-              />
-            )}
+            {sheet === "topup" && <TopUpSheet />}
+            {sheet === "send" && <SendByCodeSheet onDone={() => { setSheet(null); load(); }} />}
           </div>
         </div>
       )}
@@ -273,13 +181,23 @@ function WalletPage() {
   );
 }
 
-function TopUpSheet({ onDone }: { onDone: () => void }) {
-  const { t } = useI18n();
+function describeTx(type: string | null, credit: boolean): string {
+  switch (type) {
+    case "booking_payment": return credit ? "Booking payment received" : "Booking payment";
+    case "commission": return "Platform commission";
+    case "split_send": return credit ? "Received by code" : "Sent by code";
+    case "topup": return "Wallet top up";
+    case "withdrawal": return "Withdrawal";
+    default: return credit ? "Credit" : "Debit";
+  }
+}
+
+function TopUpSheet() {
   const [amount, setAmount] = useState("20");
-  const [method, setMethod] = useState<"cliq" | "card">("cliq");
+  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hi, I'd like to top up ${amount} JOD to my Khidmati wallet.`)}`;
   return (
     <div className="space-y-4">
-      <h3 className="font-bold text-lg">{t("topUp")}</h3>
+      <h3 className="font-bold text-lg">Top up wallet</h3>
       <div>
         <div className="text-xs text-muted-foreground mb-1.5">Amount (JOD)</div>
         <input
@@ -289,7 +207,7 @@ function TopUpSheet({ onDone }: { onDone: () => void }) {
           className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-lg font-semibold outline-none focus:border-primary"
         />
         <div className="flex gap-2 mt-2">
-          {[10, 20, 50, 100].map((v) => (
+          {[5, 10, 20, 50].map((v) => (
             <button
               key={v}
               onClick={() => setAmount(String(v))}
@@ -300,49 +218,82 @@ function TopUpSheet({ onDone }: { onDone: () => void }) {
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {(["cliq", "card"] as const).map((m) => (
-          <button
-            key={m}
-            onClick={() => setMethod(m)}
-            className="spring-tap rounded-2xl py-3 text-sm font-semibold border-2"
-            style={{
-              borderColor: method === m ? "var(--color-primary)" : "var(--color-border)",
-              background: method === m ? "var(--color-primary-tint)" : "white",
-              color: method === m ? "var(--color-primary)" : "var(--color-foreground)",
-            }}
-          >
-            {m === "cliq" ? "CliQ" : "Card"}
-          </button>
-        ))}
+      <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground bg-white/60">
+        Card top up coming soon — contact us on WhatsApp to top up manually.
       </div>
-      <button
-        onClick={() => { toast.success(`Top up ${amount} JOD via ${method.toUpperCase()}`); onDone(); }}
-        className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white"
+      <a
+        href={waUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white flex items-center justify-center gap-2"
         style={{ background: "var(--gradient-primary)" }}
       >
-        Confirm top up
-      </button>
+        <MessageCircle size={16} /> Top up via WhatsApp
+      </a>
     </div>
   );
 }
 
-function TransferSheet({ onDone }: { onDone: () => void }) {
-  const { t } = useI18n();
+function SendByCodeSheet({ onDone }: { onDone: () => void }) {
   const [code, setCode] = useState("");
   const [amount, setAmount] = useState("");
+  const [recipient, setRecipient] = useState<{ full_name: string } | null>(null);
+  const [looking, setLooking] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const lookup = async () => {
+    if (!code.trim()) return toast.error("Enter a wallet code");
+    setLooking(true);
+    setRecipient(null);
+    const { data, error } = await supabase.rpc("lookup_wallet_by_code", { p_code: code.trim() });
+    setLooking(false);
+    if (error) return toast.error(error.message);
+    if (!data) return toast.error("No wallet found for that code");
+    setRecipient(data as { full_name: string });
+  };
+
+  const send = async () => {
+    const amt = parseFloat(amount);
+    if (!amt || amt <= 0) return toast.error("Enter a valid amount");
+    setSending(true);
+    const { error } = await supabase.rpc("process_split_send", {
+      p_recipient_code: code.trim(),
+      p_amount: amt,
+    });
+    setSending(false);
+    if (error) return toast.error(error.message);
+    toast.success(`${amt.toFixed(2)} JOD sent to ${recipient?.full_name}`);
+    onDone();
+  };
+
   return (
     <div className="space-y-4">
-      <h3 className="font-bold text-lg">{t("transfer")}</h3>
+      <h3 className="font-bold text-lg">Send by code</h3>
       <div>
-        <div className="text-xs text-muted-foreground mb-1.5">{t("privateCode")}</div>
-        <input
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          placeholder="KH-XXXX-XXX"
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 font-mono outline-none focus:border-primary"
-        />
+        <div className="text-xs text-muted-foreground mb-1.5">Recipient wallet code</div>
+        <div className="flex gap-2">
+          <input
+            value={code}
+            onChange={(e) => { setCode(e.target.value.toUpperCase()); setRecipient(null); }}
+            placeholder="ABCD1234"
+            className="flex-1 rounded-2xl border border-border bg-white px-4 py-3 font-mono outline-none focus:border-primary uppercase"
+          />
+          <button
+            onClick={lookup}
+            disabled={looking}
+            className="spring-tap rounded-2xl px-4 text-sm font-semibold bg-primary-tint text-primary"
+          >
+            {looking ? <Loader2 size={16} className="animate-spin" /> : "Find"}
+          </button>
+        </div>
       </div>
+
+      {recipient && (
+        <div className="rounded-2xl bg-primary-tint p-3 text-sm">
+          Sending to <span className="font-semibold">{recipient.full_name}</span>
+        </div>
+      )}
+
       <div>
         <div className="text-xs text-muted-foreground mb-1.5">Amount (JOD)</div>
         <input
@@ -352,136 +303,15 @@ function TransferSheet({ onDone }: { onDone: () => void }) {
           className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-lg font-semibold outline-none focus:border-primary"
         />
       </div>
+
       <button
-        onClick={() => {
-          if (!code || !amount) return toast.error("Fill code and amount");
-          toast.success(`${amount} JOD sent to ${code}`);
-          onDone();
-        }}
-        className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white"
+        onClick={send}
+        disabled={!recipient || sending}
+        className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2"
         style={{ background: "var(--gradient-primary)" }}
       >
-        Send transfer
-      </button>
-    </div>
-  );
-}
-
-function SplitSheet({
-  groups, onDelete, onUseGroup, onCreate,
-}: {
-  groups: SplitGroup[];
-  onDelete: (id: string) => void;
-  onUseGroup: (g: SplitGroup) => void;
-  onCreate: () => void;
-}) {
-  const { t } = useI18n();
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-lg">{t("splitGroups")}</h3>
-        <button
-          onClick={onCreate}
-          className="spring-tap rounded-full bg-primary text-primary-foreground px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1"
-        >
-          <UserPlus size={14} /> {t("newGroup")}
-        </button>
-      </div>
-      {groups.length === 0 && (
-        <div className="text-center text-sm text-muted-foreground py-8">No groups yet — create one</div>
-      )}
-      <div className="space-y-2">
-        {groups.map((g) => (
-          <div key={g.id} className="glass rounded-2xl p-3 flex items-center gap-3">
-            <div className="text-2xl">{g.emoji}</div>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm truncate">{g.name}</div>
-              <div className="text-[11px] text-muted-foreground truncate">
-                {g.codes.length} {t("members")} · {g.codes.slice(0, 2).join(", ")}{g.codes.length > 2 ? "…" : ""}
-              </div>
-            </div>
-            <button
-              onClick={() => onUseGroup(g)}
-              className="spring-tap rounded-xl bg-primary-tint text-primary text-xs font-semibold px-3 py-2"
-            >
-              Use
-            </button>
-            <button
-              onClick={() => onDelete(g.id)}
-              className="spring-tap p-2 text-muted-foreground"
-              aria-label="Delete"
-            >
-              <Trash2 size={15} />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function NewGroupSheet({
-  name, setName, codes, setCodes, onSave, onBack,
-}: {
-  name: string;
-  setName: (v: string) => void;
-  codes: string[];
-  setCodes: (v: string[]) => void;
-  onSave: () => void;
-  onBack: () => void;
-}) {
-  const { t } = useI18n();
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-lg">{t("newGroup")}</h3>
-        <button onClick={onBack} className="text-xs text-primary font-semibold">← Back</button>
-      </div>
-      <div>
-        <div className="text-xs text-muted-foreground mb-1.5">{t("groupName")}</div>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Padel gang"
-          className="w-full rounded-2xl border border-border bg-white px-4 py-3 outline-none focus:border-primary"
-        />
-      </div>
-      <div className="space-y-2">
-        <div className="text-xs text-muted-foreground">Member codes</div>
-        {codes.map((c, i) => (
-          <div key={i} className="flex gap-2">
-            <input
-              value={c}
-              onChange={(e) => {
-                const n = [...codes]; n[i] = e.target.value; setCodes(n);
-              }}
-              placeholder="KH-XXXX-XXX"
-              className="flex-1 rounded-2xl border border-border bg-white px-4 py-2.5 font-mono text-sm outline-none focus:border-primary"
-            />
-            {codes.length > 1 && (
-              <button
-                onClick={() => setCodes(codes.filter((_, j) => j !== i))}
-                className="spring-tap p-2 text-muted-foreground"
-                aria-label="Remove"
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-        ))}
-        <button
-          onClick={() => setCodes([...codes, ""])}
-          className="spring-tap w-full rounded-2xl py-2.5 text-xs font-semibold border border-dashed border-border text-primary"
-        >
-          + {t("addCode")}
-        </button>
-      </div>
-      <button
-        onClick={onSave}
-        className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold text-white"
-        style={{ background: "var(--gradient-primary)" }}
-      >
-        {t("save")}
+        {sending && <Loader2 size={16} className="animate-spin" />}
+        {recipient ? `Confirm & send` : "Find recipient first"}
       </button>
     </div>
   );
