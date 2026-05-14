@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2,
+  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2, Receipt,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { WalletTxSkeleton } from "@/components/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { haptic } from "@/lib/haptics";
 
 export const Route = createFileRoute("/wallet")({
   head: () => ({
