@@ -153,10 +153,7 @@ function HomePage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-      {/* search + Ask AI */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
+
           if (query.trim()) {
             navigate({ to: "/concierge", search: { q: query.trim() } });
           }
