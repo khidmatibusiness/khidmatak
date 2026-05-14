@@ -106,7 +106,6 @@ function BookingsPage() {
     return () => { cancelled = true; };
   }, [navigate]);
 
-  useEffect(() => {
   const load = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setRows([]); return; }
