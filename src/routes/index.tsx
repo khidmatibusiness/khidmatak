@@ -46,13 +46,6 @@ const categories = [
   { id: "medical", label: { en: "Medical", ar: "طبية" }, emoji: "🩺", tint: "linear-gradient(160deg, oklch(0.95 0.05 230), oklch(0.99 0.02 230))" },
   { id: "beauty", label: { en: "Beauty", ar: "تجميل" }, emoji: "💆", tint: "linear-gradient(160deg, oklch(0.95 0.05 20), oklch(0.99 0.02 20))" },
 ];
-  const q = query.trim().toLowerCase();
-  const filteredNearby = q
-    ? nearby.filter((s) =>
-        [s.name_en, s.name_ar ?? "", s.pro_name, s.category ?? "", s.subcategory ?? ""]
-          .some((v) => v.toLowerCase().includes(q)),
-      )
-    : nearby;
 
 function HomePage() {
   const { t, lang } = useI18n();
@@ -101,6 +94,14 @@ function HomePage() {
       else n.add(id);
       return n;
     });
+
+  const q = query.trim().toLowerCase();
+  const filteredNearby = q
+    ? nearby.filter((s) =>
+        [s.name_en, s.name_ar ?? "", s.pro_name, s.category ?? "", s.subcategory ?? ""]
+          .some((v) => v.toLowerCase().includes(q)),
+      )
+    : nearby;
 
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
