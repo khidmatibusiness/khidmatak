@@ -1,10 +1,11 @@
-import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft, Star, MapPin, Clock, ShieldCheck, CalendarPlus, Loader2, Circle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { BookingSheet } from "@/components/BookingSheet";
 
 export const Route = createFileRoute("/pro/$id")({
   head: ({ params }) => ({
