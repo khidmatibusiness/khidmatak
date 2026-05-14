@@ -29,7 +29,7 @@ interface Tx {
   id: string;
   type: string | null;
   amount: number;
-  created_at: string;
+  created_at: string | null;
   from_wallet_id: string | null;
   to_wallet_id: string | null;
   note: string | null;
