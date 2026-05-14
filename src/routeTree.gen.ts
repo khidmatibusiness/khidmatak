@@ -21,6 +21,7 @@ import { Route as BookingsRouteImport } from './routes/bookings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIdRouteImport } from './routes/pro.$id'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as BookingsIdRouteImport } from './routes/bookings.$id'
 import { Route as BookServiceIdRouteImport } from './routes/book.$serviceId'
 
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -83,6 +84,11 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookingsIdRoute = BookingsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => BookingsRoute,
+} as any)
 const BookServiceIdRoute = BookServiceIdRouteImport.update({
   id: '/book/$serviceId',
   path: '/book/$serviceId',
@@ -91,7 +97,7 @@ const BookServiceIdRoute = BookServiceIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/bookings': typeof BookingsRoute
+  '/bookings': typeof BookingsRouteWithChildren
   '/concierge': typeof ConciergeRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -101,12 +107,13 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
   '/book/$serviceId': typeof BookServiceIdRoute
+  '/bookings/$id': typeof BookingsIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/bookings': typeof BookingsRoute
+  '/bookings': typeof BookingsRouteWithChildren
   '/concierge': typeof ConciergeRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -116,13 +123,14 @@ export interface FileRoutesByTo {
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
   '/book/$serviceId': typeof BookServiceIdRoute
+  '/bookings/$id': typeof BookingsIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/bookings': typeof BookingsRoute
+  '/bookings': typeof BookingsRouteWithChildren
   '/concierge': typeof ConciergeRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
   '/book/$serviceId': typeof BookServiceIdRoute
+  '/bookings/$id': typeof BookingsIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/pro/$id': typeof ProIdRoute
 }
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/welcome'
     | '/book/$serviceId'
+    | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/welcome'
     | '/book/$serviceId'
+    | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
   id:
@@ -179,13 +190,14 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/welcome'
     | '/book/$serviceId'
+    | '/bookings/$id'
     | '/category/$slug'
     | '/pro/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BookingsRoute: typeof BookingsRoute
+  BookingsRoute: typeof BookingsRouteWithChildren
   ConciergeRoute: typeof ConciergeRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
@@ -285,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bookings/$id': {
+      id: '/bookings/$id'
+      path: '/$id'
+      fullPath: '/bookings/$id'
+      preLoaderRoute: typeof BookingsIdRouteImport
+      parentRoute: typeof BookingsRoute
+    }
     '/book/$serviceId': {
       id: '/book/$serviceId'
       path: '/book/$serviceId'
@@ -295,9 +314,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BookingsRouteChildren {
+  BookingsIdRoute: typeof BookingsIdRoute
+}
+
+const BookingsRouteChildren: BookingsRouteChildren = {
+  BookingsIdRoute: BookingsIdRoute,
+}
+
+const BookingsRouteWithChildren = BookingsRoute._addFileChildren(
+  BookingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BookingsRoute: BookingsRoute,
+  BookingsRoute: BookingsRouteWithChildren,
   ConciergeRoute: ConciergeRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,

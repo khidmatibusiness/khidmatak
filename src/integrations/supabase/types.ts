@@ -410,6 +410,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_booking: { Args: { p_booking_id: string }; Returns: Json }
       increment_wallet_balance: {
         Args: { p_amount: number; p_wallet_id: string }
         Returns: undefined
