@@ -109,10 +109,10 @@ function BookingFlow() {
     return d;
   }, [mode, date, time]);
 
-  const goNext = () => setStep((s) => Math.min(4, (s + 1) as Step));
+  const goNext = () => setStep((s) => (Math.min(4, s + 1) as Step));
   const goBack = () => {
     if (step === 1) navigate({ to: "/pro/$id", params: { id: serviceId } });
-    else setStep((s) => Math.max(1, (s - 1) as Step));
+    else setStep((s) => (Math.max(1, s - 1) as Step));
   };
 
   const canContinue =
