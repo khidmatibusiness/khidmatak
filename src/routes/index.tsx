@@ -79,7 +79,7 @@ function HomePage() {
         .select("id, name_en, name_ar, category, subcategory, price, pro_id")
         .eq("is_active", true)
         .order("price", { ascending: true })
-        .limit(8);
+        .limit(200);
       const list = (svc ?? []) as Array<Omit<NearbyService, "pro_name">>;
       const proIds = Array.from(new Set(list.map((s) => s.pro_id).filter(Boolean) as string[]));
       const proMap: Record<string, string> = {};
@@ -105,12 +105,23 @@ function HomePage() {
   const toggleFav = (id: string) => setFavs(new Set(toggleFavStore(id)));
 
   const q = query.trim().toLowerCase();
+  // parse budget: "under 30", "below 25", "30 jds", "<= 20", "for 30"
+  const budgetMatch = q.match(/(?:under|below|less than|<=?|for|at|max)\s*(\d+)|(\d+)\s*(?:jod|jds|jd|dinar)/);
+  const budget = budgetMatch ? Number(budgetMatch[1] ?? budgetMatch[2]) : null;
+  const FUN_KEYWORDS = ["fun", "activity", "activities", "play", "entertain", "near me", "something to do"];
+  const isFun = FUN_KEYWORDS.some((k) => q.includes(k));
+  const FUN_SUBCATS = new Set(["padel", "football", "tennis", "swim", "gym", "spa", "hammam", "salon"]);
+
   const filteredNearby = q
-    ? nearby.filter((s) =>
-        [s.name_en, s.name_ar ?? "", s.pro_name, s.category ?? "", s.subcategory ?? ""]
-          .some((v) => v.toLowerCase().includes(q)),
-      )
-    : nearby;
+    ? nearby.filter((s) => {
+        if (budget !== null && Number(s.price) > budget) return false;
+        if (isFun && s.subcategory && FUN_SUBCATS.has(s.subcategory)) return true;
+        const stripped = q.replace(budgetMatch?.[0] ?? "", "").replace(/\b(for|under|below|jod|jds|jd)\b/g, "").trim();
+        if (!stripped) return budget !== null ? true : isFun;
+        return [s.name_en, s.name_ar ?? "", s.pro_name, s.category ?? "", s.subcategory ?? ""]
+          .some((v) => v.toLowerCase().includes(stripped));
+      })
+    : nearby.slice(0, 8);
 
 
   return (
