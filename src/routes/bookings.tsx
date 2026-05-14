@@ -107,46 +107,48 @@ function BookingsPage() {
   }, [navigate]);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setRows([]); setLoading(false); return; }
-      const statuses = tab === "upcoming" ? UPCOMING : PAST;
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("id,status,scheduled_at,created_at,total_amount,payment_method,service_id,pro_id")
-        .eq("customer_id", user.id)
-        .in("status", statuses)
-        .order("scheduled_at", { ascending: tab === "upcoming", nullsFirst: tab === "upcoming" })
-        .order("created_at", { ascending: false });
-      if (error || !data) { if (!cancelled) { setRows([]); setLoading(false); } return; }
+  const load = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setRows([]); return; }
+    const statuses = tab === "upcoming" ? UPCOMING : PAST;
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("id,status,scheduled_at,created_at,total_amount,payment_method,service_id,pro_id")
+      .eq("customer_id", user.id)
+      .in("status", statuses)
+      .order("scheduled_at", { ascending: tab === "upcoming", nullsFirst: tab === "upcoming" })
+      .order("created_at", { ascending: false });
+    if (error || !data) { setRows([]); return; }
 
-      const serviceIds = Array.from(new Set(data.map((b) => b.service_id).filter(Boolean) as string[]));
-      const proIds = Array.from(new Set(data.map((b) => b.pro_id).filter(Boolean) as string[]));
-      const [{ data: services }, { data: pros }] = await Promise.all([
-        serviceIds.length
-          ? supabase.from("services").select("id,name_en,name_ar").in("id", serviceIds)
-          : Promise.resolve({ data: [] as { id: string; name_en: string | null; name_ar: string | null }[] }),
-        proIds.length
-          ? supabase.from("users").select("id,full_name").in("id", proIds)
-          : Promise.resolve({ data: [] as { id: string; full_name: string | null }[] }),
-      ]);
-      const sMap = new Map((services ?? []).map((s) => [s.id, s]));
-      const pMap = new Map((pros ?? []).map((p) => [p.id, p]));
-
-      const merged: BookingRow[] = data.map((b) => ({
-        ...b,
-        total_amount: Number(b.total_amount),
-        service: b.service_id ? sMap.get(b.service_id) ?? null : null,
-        pro: b.pro_id ? pMap.get(b.pro_id) ?? null : null,
-      }));
-      if (!cancelled) { setRows(merged); setLoading(false); }
-    })();
-    return () => { cancelled = true; };
+    const serviceIds = Array.from(new Set(data.map((b) => b.service_id).filter(Boolean) as string[]));
+    const proIds = Array.from(new Set(data.map((b) => b.pro_id).filter(Boolean) as string[]));
+    const [{ data: services }, { data: pros }] = await Promise.all([
+      serviceIds.length
+        ? supabase.from("services").select("id,name_en,name_ar").in("id", serviceIds)
+        : Promise.resolve({ data: [] as { id: string; name_en: string | null; name_ar: string | null }[] }),
+      proIds.length
+        ? supabase.from("users").select("id,full_name").in("id", proIds)
+        : Promise.resolve({ data: [] as { id: string; full_name: string | null }[] }),
+    ]);
+    const sMap = new Map((services ?? []).map((s) => [s.id, s]));
+    const pMap = new Map((pros ?? []).map((p) => [p.id, p]));
+    setRows(data.map((b) => ({
+      ...b,
+      total_amount: Number(b.total_amount),
+      service: b.service_id ? sMap.get(b.service_id) ?? null : null,
+      pro: b.pro_id ? pMap.get(b.pro_id) ?? null : null,
+    })));
   }, [tab]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    load().finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [load]);
+
   return (
+    <PullToRefresh onRefresh={load}>
     <div className="px-5 pt-8 pb-8 space-y-5 animate-fade-up">
       <h1 className="text-2xl font-bold tracking-tight">{t("bookings")}</h1>
 
@@ -156,7 +158,7 @@ function BookingsPage() {
           return (
             <button
               key={k}
-              onClick={() => setTab(k)}
+              onClick={() => { haptic("light"); setTab(k); }}
               className="spring-tap flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors"
               style={{
                 background: active ? "var(--color-primary)" : "transparent",
@@ -169,16 +171,23 @@ function BookingsPage() {
         })}
       </div>
 
-      {loading && (
-        <div className="flex items-center justify-center py-12 text-muted-foreground">
-          <Loader2 className="animate-spin" size={20} />
-        </div>
-      )}
+      {loading && <BookingsSkeleton />}
 
       {!loading && rows.length === 0 && (
-        <div className="glass rounded-3xl py-12 text-center text-sm text-muted-foreground">
-          {lang === "ar" ? "لا توجد حجوزات هنا" : "No bookings here yet"}
-        </div>
+        <EmptyState
+          icon={<CalendarCheck size={22} />}
+          title={tab === "upcoming"
+            ? (lang === "ar" ? "لا توجد حجوزات قادمة" : "No upcoming bookings")
+            : (lang === "ar" ? "لا يوجد سجل حجوزات" : "No past bookings")}
+          description={tab === "upcoming"
+            ? (lang === "ar" ? "ابدأ بحجز خدمة لتظهر هنا." : "Book a service from the home screen and it will show up here.")
+            : (lang === "ar" ? "ستظهر الحجوزات المكتملة والملغاة هنا." : "Completed and cancelled bookings will appear here.")}
+          action={
+            tab === "upcoming"
+              ? <Link to="/" className="spring-tap rounded-full px-5 py-2.5 text-sm font-semibold text-white" style={{ background: "var(--gradient-primary)" }}>{lang === "ar" ? "تصفح الخدمات" : "Browse services"}</Link>
+              : undefined
+          }
+        />
       )}
 
       <div className="space-y-3">
