@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -111,8 +111,10 @@ function HomePage() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {categories.map((c) => (
-            <button
+            <Link
               key={c.id}
+              to="/category/$slug"
+              params={{ slug: c.id }}
               className="spring-tap text-start rounded-3xl p-4 h-40 flex flex-col justify-between border border-white"
               style={{ background: c.tint, boxShadow: "var(--shadow-soft)" }}
             >
@@ -123,7 +125,7 @@ function HomePage() {
                   Browse <ChevronRight size={12} className="rtl:rotate-180" />
                 </div>
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </section>
