@@ -242,8 +242,10 @@ function CategoryPage() {
       {/* provider list */}
       <div className="space-y-3">
         {providers.map((p) => (
-          <button
+          <Link
             key={p.id}
+            to="/pro/$id"
+            params={{ id: p.id }}
             className="spring-tap w-full glass rounded-3xl p-3 flex items-center gap-3 text-start"
           >
             <div
@@ -270,7 +272,7 @@ function CategoryPage() {
               </div>
             </div>
             <ChevronRight size={18} className="text-muted-foreground rtl:rotate-180" />
-          </button>
+          </Link>
         ))}
         {providers.length === 0 && (
           <div className="text-center text-sm text-muted-foreground py-10">No providers match your search.</div>
