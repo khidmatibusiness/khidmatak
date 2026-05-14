@@ -31,6 +31,7 @@ const nearYou = [
 
 function HomePage() {
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [sosOpen, setSosOpen] = useState(false);
   const [favs, setFavs] = useState<Set<string>>(new Set());
@@ -98,7 +99,7 @@ function HomePage() {
           className="bg-transparent outline-none flex-1 text-sm placeholder:text-muted-foreground py-2 min-w-0"
         />
         <button
-          onClick={() => toast(query ? `Asking AI: "${query}"` : "AI Concierge ready — type a question")}
+          onClick={() => navigate({ to: "/concierge", search: query.trim() ? { q: query.trim() } : {} })}
           className="spring-tap shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
         >
