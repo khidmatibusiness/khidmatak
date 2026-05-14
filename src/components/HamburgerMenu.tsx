@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Menu, X, Heart, Star, LifeBuoy, Info, Gift, LogOut } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
@@ -8,11 +8,12 @@ interface Item { icon: ReactNode; key: "favourites" | "myReviews" | "referFriend
 
 export function HamburgerMenu() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const items: Item[] = [
-    { icon: <Heart size={20} />, key: "favourites", onClick: () => toast("Favourites — coming soon") },
-    { icon: <Star size={20} />, key: "myReviews", onClick: () => toast("My reviews — coming soon") },
+    { icon: <Heart size={20} />, key: "favourites", onClick: () => navigate({ to: "/favourites" }) },
+    { icon: <Star size={20} />, key: "myReviews", onClick: () => navigate({ to: "/my-reviews" }) },
     {
       icon: <Gift size={20} />,
       key: "referFriend",

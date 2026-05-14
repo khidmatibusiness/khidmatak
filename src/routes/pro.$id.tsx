@@ -1,10 +1,11 @@
-import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft, Star, MapPin, Clock, ShieldCheck, CalendarPlus, Loader2, Circle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { BookingSheet } from "@/components/BookingSheet";
 
 export const Route = createFileRoute("/pro/$id")({
   head: ({ params }) => ({
@@ -38,12 +39,12 @@ interface ReviewRow {
 
 function ProProfilePage() {
   const { id } = useParams({ from: "/pro/$id" });
-  const navigate = useNavigate();
   const [service, setService] = useState<ServiceRow | null>(null);
   const [proName, setProName] = useState<string>("");
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookOpen, setBookOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,7 +112,7 @@ function ProProfilePage() {
   const isAvailable = service.is_active !== false;
 
   const handleBook = () => {
-    navigate({ to: "/book/$serviceId", params: { serviceId: service!.id } });
+    setBookOpen(true);
   };
 
   return (
@@ -237,6 +238,8 @@ function ProProfilePage() {
           </button>
         </div>
       </div>
+
+      <BookingSheet serviceId={service.id} proName={proName} open={bookOpen} onClose={() => setBookOpen(false)} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { SosSheet } from "@/components/SosSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getFavs, toggleFav as toggleFavStore } from "@/lib/favs";
 
 const SUBCAT_EMOJI: Record<string, string> = {
   cleaning: "🧼", laundry: "🧺", pest: "🪲", painting: "🎨",
@@ -64,6 +65,13 @@ function HomePage() {
   const [nearbyLoading, setNearbyLoading] = useState(true);
 
   useEffect(() => {
+    const sync = () => setFavs(new Set(getFavs()));
+    sync();
+    window.addEventListener("khidmati:favs", sync);
+    return () => window.removeEventListener("khidmati:favs", sync);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: svc } = await supabase
@@ -94,13 +102,7 @@ function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
-  const toggleFav = (id: string) =>
-    setFavs((s) => {
-      const n = new Set(s);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
+  const toggleFav = (id: string) => setFavs(new Set(toggleFavStore(id)));
 
   const q = query.trim().toLowerCase();
   const filteredNearby = q
