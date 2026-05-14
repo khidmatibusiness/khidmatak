@@ -212,40 +212,55 @@ function HomePage() {
             <MapPin size={14} /> View on map
           </button>
         </div>
-        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
-          {nearYou.map((s) => {
-            const fav = favs.has(s.id);
-            return (
-              <div
-                key={s.id}
-                className="shrink-0 w-44 snap-start rounded-3xl bg-white p-3 border border-border"
-                style={{ boxShadow: "var(--shadow-soft)" }}
-              >
-                <div
-                  className="relative rounded-2xl h-24 flex items-center justify-center mb-3"
-                  style={{ background: s.tint }}
+        {nearbyLoading ? (
+          <div className="py-8 flex justify-center">
+            <Loader2 className="animate-spin text-primary" size={20} />
+          </div>
+        ) : nearby.length === 0 ? (
+          <div className="text-center text-sm text-muted-foreground py-8">
+            {lang === "ar" ? "لا توجد خدمات قريبة بعد." : "No nearby services yet."}
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
+            {nearby.map((s) => {
+              const fav = favs.has(s.id);
+              const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
+              const tint = (s.category && CATEGORY_TINT[s.category]) || "oklch(0.97 0.025 158)";
+              const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
+              return (
+                <Link
+                  key={s.id}
+                  to="/pro/$id"
+                  params={{ id: s.id }}
+                  className="spring-tap shrink-0 w-44 snap-start rounded-3xl bg-white p-3 border border-border text-start"
+                  style={{ boxShadow: "var(--shadow-soft)" }}
                 >
-                  <span className="text-4xl">{s.emoji}</span>
-                  <button
-                    onClick={() => toggleFav(s.id)}
-                    aria-label="Favourite"
-                    className="spring-tap absolute top-2 end-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center"
+                  <div
+                    className="relative rounded-2xl h-24 flex items-center justify-center mb-3"
+                    style={{ background: tint }}
                   >
-                    <Heart size={14} className={fav ? "fill-destructive text-destructive" : "text-muted-foreground"} />
-                  </button>
-                </div>
-                <div className="font-semibold text-sm leading-tight truncate">{s.name[lang]}</div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                  <Star size={12} className="fill-gold text-gold" />
-                  <span className="font-semibold text-foreground">{s.rating.toFixed(1)}</span>
-                  <span>·</span>
-                  <span>{s.distance}</span>
-                </div>
-                <div className="text-xs font-semibold text-primary mt-1.5">{s.price} JOD/visit</div>
-              </div>
-            );
-          })}
-        </div>
+                    <span className="text-4xl">{emoji}</span>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFav(s.id); }}
+                      aria-label="Favourite"
+                      className="spring-tap absolute top-2 end-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center"
+                    >
+                      <Heart size={14} className={fav ? "fill-destructive text-destructive" : "text-muted-foreground"} />
+                    </button>
+                  </div>
+                  <div className="font-semibold text-sm leading-tight truncate">{s.pro_name}</div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                    <Star size={12} className="fill-gold text-gold" />
+                    <span className="font-semibold text-foreground">—</span>
+                    <span>·</span>
+                    <span className="truncate">{displayName}</span>
+                  </div>
+                  <div className="text-xs font-semibold text-primary mt-1.5">{Number(s.price).toFixed(0)} JOD</div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Khidmati Gold */}
