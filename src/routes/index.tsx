@@ -228,7 +228,7 @@ function HomePage() {
           </div>
         ) : (
           <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 snap-x snap-mandatory">
-            {nearby.map((s) => {
+            {filteredNearby.map((s) => {
               const fav = favs.has(s.id);
               const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
               const tint = (s.category && CATEGORY_TINT[s.category]) || "oklch(0.97 0.025 158)";
