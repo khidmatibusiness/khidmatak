@@ -417,6 +417,10 @@ export type Database = {
     }
     Functions: {
       cancel_booking: { Args: { p_booking_id: string }; Returns: Json }
+      confirm_booking_payment: {
+        Args: { p_booking_id: string }
+        Returns: undefined
+      }
       increment_wallet_balance: {
         Args: { p_amount: number; p_wallet_id: string }
         Returns: undefined
