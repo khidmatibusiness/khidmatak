@@ -39,7 +39,7 @@ interface Tx {
 }
 
 function WalletPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [showCode, setShowCode] = useState(false);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [txs, setTxs] = useState<Tx[]>([]);
