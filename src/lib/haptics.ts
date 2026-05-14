@@ -15,5 +15,5 @@ export function haptic(style: HapticStyle = "light") {
   if (typeof navigator === "undefined") return;
   const v = (navigator as Navigator & { vibrate?: (p: number | number[]) => boolean }).vibrate;
   if (typeof v !== "function") return;
-  try { v.call(navigator, PATTERNS[style]); } catch { /* noop */ }
+  try { v.call(navigator, PATTERNS[style] as number & number[]); } catch { /* noop */ }
 }
