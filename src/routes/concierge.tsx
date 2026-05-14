@@ -62,14 +62,15 @@ function ConciergePage() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       toast.error(msg);
+      setInput(trimmed);
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
           content:
             lang === "ar"
-              ? "عذراً، صار خطأ. حاول مرة ثانية."
-              : "Sorry, something went wrong. Please try again.",
+              ? `عذراً، صار خطأ: ${msg}. تقدر تعدّل الرسالة وتحاول مرة ثانية.`
+              : `Sorry, this failed: ${msg}. You can edit the message and try again.`,
         },
       ]);
     } finally {
