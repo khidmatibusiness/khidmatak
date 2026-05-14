@@ -96,6 +96,7 @@ function SignupPage() {
         <Field label="Phone number" value={phone} onChange={setPhone} placeholder="07X XXX XXXX" type="tel" />
         <Field label="Email" value={email} onChange={setEmail} placeholder="you@email.com" type="email" />
         <Field label="Password" value={password} onChange={setPassword} placeholder="At least 6 characters" type="password" />
+        <Field label="Referral code (optional)" value={referral} onChange={(v) => setReferral(v.toUpperCase())} placeholder="e.g. AB12CD34" />
 
         <button
           type="submit"
