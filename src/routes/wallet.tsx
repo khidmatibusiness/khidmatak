@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2, Receipt,
+  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2, Receipt, Split,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
