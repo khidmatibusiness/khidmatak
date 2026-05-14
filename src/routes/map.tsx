@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, MapPin, Loader2, Navigation, Star, ShieldCheck } from "lucide-react";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import L from "leaflet";
 import { supabase } from "@/integrations/supabase/client";
+
+const LeafletMap = lazy(() => import("@/components/LeafletMap"));
 
 export const Route = createFileRoute("/map")({
   head: () => ({
@@ -46,30 +46,12 @@ function seedFromId(id: string) {
   return Math.abs(h);
 }
 
-function emojiIcon(emoji: string, active = false) {
-  return L.divIcon({
-    className: "khidmati-pin",
-    html: `<div style="width:42px;height:42px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 16px -4px rgba(0,0,0,0.25);border:2px solid ${active ? "oklch(0.62 0.14 158)" : "white"};transform:translate(-50%,-100%);">${emoji}</div>`,
-    iconSize: [42, 42],
-    iconAnchor: [0, 0],
-  });
-}
-
-function FlyTo({ pos }: { pos: [number, number] | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (pos) map.flyTo(pos, 15, { duration: 0.8 });
-  }, [pos, map]);
-  return null;
-}
-
 function MapPage() {
   const [pins, setPins] = useState<PinService[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [meTo, setMeTo] = useState<[number, number] | null>(null);
   const [mounted, setMounted] = useState(false);
-  const mapRef = useRef<L.Map | null>(null);
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
@@ -118,7 +100,10 @@ function MapPage() {
   const distance = selected ? haversine({ lat: CENTER[0], lng: CENTER[1] }, selected) : 0;
 
   const locateMe = () => {
-    if (!navigator.geolocation) return setMeTo(CENTER);
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setMeTo(CENTER);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => setMeTo([pos.coords.latitude, pos.coords.longitude]),
       () => setMeTo(CENTER),
@@ -151,33 +136,27 @@ function MapPage() {
       </div>
 
       {/* Map */}
-      <div className="h-[62vh] w-full">
-        {loading || !mounted ? (
-          <div className="h-full w-full flex items-center justify-center bg-muted">
+      <div className="h-[62vh] w-full bg-muted">
+        {mounted && !loading ? (
+          <Suspense
+            fallback={
+              <div className="h-full w-full flex items-center justify-center">
+                <Loader2 className="animate-spin text-primary" />
+              </div>
+            }
+          >
+            <LeafletMap
+              center={CENTER}
+              pins={pins}
+              selectedId={selectedId}
+              flyTo={meTo}
+              onSelect={setSelectedId}
+            />
+          </Suspense>
+        ) : (
+          <div className="h-full w-full flex items-center justify-center">
             <Loader2 className="animate-spin text-primary" />
           </div>
-        ) : (
-          <MapContainer
-            center={CENTER}
-            zoom={14}
-            scrollWheelZoom
-            style={{ height: "100%", width: "100%" }}
-            ref={(m) => { if (m) mapRef.current = m; }}
-          >
-            <TileLayer
-              attribution='&copy; OpenStreetMap'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <FlyTo pos={meTo} />
-            {pins.map((p) => (
-              <Marker
-                key={p.id}
-                position={[p.lat, p.lng]}
-                icon={emojiIcon(p.emoji, p.id === selectedId)}
-                eventHandlers={{ click: () => setSelectedId(p.id) }}
-              />
-            ))}
-          </MapContainer>
         )}
       </div>
 
