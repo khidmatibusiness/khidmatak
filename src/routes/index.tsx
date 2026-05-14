@@ -96,8 +96,13 @@ function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
-  // suppress unused-var warning
-  void nearByCacheKey;
+  const toggleFav = (id: string) =>
+    setFavs((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
 
   return (
     <div className="px-5 pt-7 space-y-6 animate-fade-up">
