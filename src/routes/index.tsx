@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
