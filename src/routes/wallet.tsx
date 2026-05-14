@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2, Receipt, Split,
+  Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2, Receipt, Split, Users, Trash2, X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { WalletTxSkeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { haptic } from "@/lib/haptics";
+import { getGroups, saveGroups, type SplitGroup, type SplitMember } from "@/lib/split-groups";
 
 export const Route = createFileRoute("/wallet")({
   head: () => ({
