@@ -106,11 +106,11 @@ export function SosSheet({ open, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 animate-fade-up"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-fade-up"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-md rounded-t-3xl px-5 pt-3 pb-5 max-h-[88vh] overflow-y-auto"
+        className="bg-white w-full max-w-md rounded-[28px] px-4 pt-3 pb-4 max-h-[calc(100dvh-2rem)] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: "var(--shadow-float)" }}
       >
@@ -163,7 +163,7 @@ export function SosSheet({ open, onClose }: Props) {
         )}
 
         {step === "offers" && meta && (
-          <div className="space-y-3 animate-fade-up">
+          <div className="space-y-2.5 animate-fade-up">
             <div className="flex items-start justify-between gap-3">
               <button
                 onClick={() => { setStep("pick"); setRevealed(0); setConfirmed(null); }}
@@ -192,7 +192,7 @@ export function SosSheet({ open, onClose }: Props) {
             </div>
 
             {revealed === 0 && (
-              <div className="py-8 flex flex-col items-center gap-3 text-muted-foreground">
+              <div className="py-5 flex flex-col items-center gap-2.5 text-muted-foreground">
                 <Loader2 className="animate-spin text-destructive" size={26} />
                 <div className="text-sm">Broadcasting to verified providers…</div>
               </div>
@@ -204,12 +204,12 @@ export function SosSheet({ open, onClose }: Props) {
               return (
                 <div
                   key={o.name}
-                  className={`rounded-3xl bg-white border border-border p-4 animate-fade-up transition-opacity ${isDimmed ? "opacity-40" : ""}`}
+                  className={`rounded-2xl bg-white border border-border p-3 animate-fade-up transition-opacity ${isDimmed ? "opacity-40" : ""}`}
                   style={{ boxShadow: "var(--shadow-soft)" }}
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0"
                       style={{ background: "var(--color-primary-tint)" }}
                     >
                       {meta.emoji}
@@ -236,17 +236,17 @@ export function SosSheet({ open, onClose }: Props) {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
                     <div className="text-xs text-muted-foreground">
                       Urgency fee: <span className="text-foreground font-semibold">{URGENCY_FEE} JOD</span>
                     </div>
                     <div className="text-lg font-bold">{o.total} JOD</div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="grid grid-cols-2 gap-2 mt-2">
                     <button
                       onClick={() => toast(`Directions to ${o.name}`)}
-                      className="spring-tap rounded-full py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5"
+                      className="spring-tap rounded-full py-2 text-sm font-semibold flex items-center justify-center gap-1.5"
                       style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
                     >
                       <Navigation size={14} /> Directions
@@ -258,7 +258,7 @@ export function SosSheet({ open, onClose }: Props) {
                         toast.success(`${o.name} is on the way · ETA ${o.eta} min`);
                         setTimeout(onClose, 1400);
                       }}
-                      className="spring-tap rounded-full py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5 text-white disabled:opacity-60"
+                      className="spring-tap rounded-full py-2 text-sm font-semibold flex items-center justify-center gap-1.5 text-white disabled:opacity-60"
                       style={{ background: "var(--gradient-primary)" }}
                     >
                       <Check size={14} /> {isConfirmed ? "Confirmed" : "Confirm"}
@@ -271,7 +271,7 @@ export function SosSheet({ open, onClose }: Props) {
             {!confirmed && (
               <button
                 onClick={onClose}
-                className="spring-tap w-full rounded-full py-3 font-semibold flex items-center justify-center gap-2 mt-2"
+                className="spring-tap w-full rounded-full py-2.5 font-semibold flex items-center justify-center gap-2 mt-1"
                 style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
               >
                 <X size={16} /> Cancel SOS
