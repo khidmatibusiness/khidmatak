@@ -123,12 +123,15 @@ function WalletPage() {
           <h2 className="text-sm font-semibold mb-2 px-1">{t("recent")}</h2>
           <div className="glass rounded-3xl divide-y divide-border overflow-hidden">
             {loading && (
-              <div className="flex items-center justify-center py-8 text-muted-foreground">
-                <Loader2 size={18} className="animate-spin" />
-              </div>
+              <div className="p-3"><WalletTxSkeleton /></div>
             )}
             {!loading && txs.length === 0 && (
-              <div className="text-center text-sm text-muted-foreground py-8">No transactions yet</div>
+              <EmptyState
+                icon={<Receipt size={20} />}
+                title={lang === "ar" ? "لا توجد عمليات بعد" : "No transactions yet"}
+                description={lang === "ar" ? "ستظهر تعاملات محفظتك هنا." : "Your wallet activity will appear here."}
+                className="border-0"
+              />
             )}
             {!loading && txs.map((tx) => {
               const credit = tx.to_wallet_id === wallet?.id;
