@@ -40,7 +40,7 @@ export const Route = createFileRoute("/")({
   }),
   beforeLoad: () => {
     if (typeof window !== "undefined" && !localStorage.getItem("khidmati_launched")) {
-      throw (require("@tanstack/react-router") as any).redirect({ to: "/welcome" });
+      throw redirect({ to: "/welcome" });
     }
   },
   component: HomePage,
