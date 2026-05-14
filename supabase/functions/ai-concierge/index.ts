@@ -104,6 +104,7 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
+        "Lovable-API-Key": apiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
