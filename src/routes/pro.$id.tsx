@@ -199,7 +199,7 @@ function ProProfilePage() {
             </div>
           )}
           {reviews.map((r) => {
-            const name = r.customer_id ? `Customer ${r.customer_id.slice(0, 4).toUpperCase()}` : "Customer";
+            const name = "Customer";
             return (
               <div key={r.id} className="glass rounded-2xl p-4">
                 <div className="flex items-center justify-between">
