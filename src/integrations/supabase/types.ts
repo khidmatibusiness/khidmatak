@@ -256,6 +256,39 @@ export type Database = {
           },
         ]
       }
+      transfer_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          recipient_id: string
+          requester_id: string
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          recipient_id: string
+          requester_id: string
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          recipient_id?: string
+          requester_id?: string
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
@@ -335,6 +368,10 @@ export type Database = {
           currency: string | null
           id: string
           is_frozen: boolean | null
+          piggy_balance: number
+          roundup_charity_id: string | null
+          roundup_enabled: boolean
+          roundup_mode: string
           user_id: string | null
           wallet_code: string | null
         }
@@ -344,6 +381,10 @@ export type Database = {
           currency?: string | null
           id?: string
           is_frozen?: boolean | null
+          piggy_balance?: number
+          roundup_charity_id?: string | null
+          roundup_enabled?: boolean
+          roundup_mode?: string
           user_id?: string | null
           wallet_code?: string | null
         }
@@ -353,10 +394,21 @@ export type Database = {
           currency?: string | null
           id?: string
           is_frozen?: boolean | null
+          piggy_balance?: number
+          roundup_charity_id?: string | null
+          roundup_enabled?: boolean
+          roundup_mode?: string
           user_id?: string | null
           wallet_code?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "wallets_roundup_charity_id_fkey"
+            columns: ["roundup_charity_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wallets_user_id_fkey"
             columns: ["user_id"]
@@ -409,17 +461,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_transfer: { Args: { p_id: string }; Returns: undefined }
       apply_referral: { Args: { p_referral_code: string }; Returns: undefined }
       cancel_booking: { Args: { p_booking_id: string }; Returns: Json }
+      complete_booking: { Args: { p_booking_id: string }; Returns: undefined }
       confirm_booking_payment: {
         Args: { p_booking_id: string }
         Returns: undefined
       }
+      donate_piggy: { Args: { p_charity_code: string }; Returns: number }
+      generate_wallet_code: { Args: never; Returns: string }
       increment_wallet_balance: {
         Args: { p_amount: number; p_wallet_id: string }
         Returns: undefined
       }
       lookup_wallet_by_code: { Args: { p_code: string }; Returns: Json }
+      piggy_to_wallet: { Args: never; Returns: number }
       process_booking_payment: {
         Args: {
           p_amount: number
@@ -433,6 +490,16 @@ export type Database = {
         Args: { p_amount: number; p_recipient_code: string }
         Returns: undefined
       }
+      reject_transfer: { Args: { p_id: string }; Returns: undefined }
+      request_transfer: {
+        Args: { p_amount: number; p_note?: string; p_recipient_code: string }
+        Returns: string
+      }
+      set_roundup_settings: {
+        Args: { p_charity_code?: string; p_enabled: boolean; p_mode: string }
+        Returns: undefined
+      }
+      withdraw_transfer: { Args: { p_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
