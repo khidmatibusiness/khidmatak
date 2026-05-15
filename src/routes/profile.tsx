@@ -126,7 +126,7 @@ function ProfilePage() {
           label={t("language")}
           right={<span className="text-xs font-semibold text-muted-foreground">{lang === "en" ? "English" : "العربية"}</span>}
         />
-        <MenuButton onClick={() => toast(lang === "ar" ? "قريباً" : "Settings coming soon")} icon={<Settings size={18} />} label={lang === "ar" ? "الإعدادات" : "Settings"} />
+        <MenuButton onClick={() => navigate({ to: "/settings" })} icon={<Settings size={18} />} label={lang === "ar" ? "الإعدادات" : "Settings"} />
         <MenuButton onClick={() => toast(lang === "ar" ? "قريباً" : "Help coming soon")} icon={<HelpCircle size={18} />} label={lang === "ar" ? "المساعدة" : "Help"} />
       </div>
 

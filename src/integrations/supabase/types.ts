@@ -433,7 +433,6 @@ export type Database = {
         Args: { p_amount: number; p_recipient_code: string }
         Returns: undefined
       }
-      redeem_referral: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
