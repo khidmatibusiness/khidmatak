@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Search, MapPin, Star, ShieldCheck, ChevronRight, Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { ProProfileSheet } from "@/components/ProProfileSheet";
+import { MapSheet } from "@/components/MapSheet";
 
 export const Route = createFileRoute("/category/$slug")({
   head: ({ params }) => ({
