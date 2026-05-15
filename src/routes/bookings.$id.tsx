@@ -87,20 +87,6 @@ function BookingDetail() {
     load();
   };
 
-  const onCancel = async () => {
-    if (!b) return;
-    if (!confirm(lang === "ar" ? "هل تريد إلغاء الحجز؟" : "Cancel this booking?")) return;
-    setCancelling(true);
-    const { data, error } = await supabase.rpc("cancel_booking", { p_booking_id: b.id });
-    setCancelling(false);
-    if (error) { toast.error(error.message); return; }
-    const refunded = (data as { refunded?: boolean } | null)?.refunded;
-    toast.success(refunded
-      ? (lang === "ar" ? "تم الإلغاء واسترداد المبلغ" : "Cancelled and wallet refunded")
-      : (lang === "ar" ? "تم إلغاء الحجز" : "Booking cancelled"));
-    load();
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
