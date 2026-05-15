@@ -35,9 +35,13 @@ function BookingDetail() {
   const [b, setB] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [meId, setMeId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    setMeId(user?.id ?? null);
     const { data, error } = await supabase
       .from("bookings")
       .select("id,status,scheduled_at,created_at,total_amount,payment_method,notes,service_id,pro_id,customer_id")
@@ -69,6 +73,17 @@ function BookingDetail() {
     toast.success(refunded
       ? (lang === "ar" ? "تم الإلغاء واسترداد المبلغ" : "Cancelled and wallet refunded")
       : (lang === "ar" ? "تم إلغاء الحجز" : "Booking cancelled"));
+    load();
+  };
+
+  const onComplete = async () => {
+    if (!b) return;
+    if (!confirm(lang === "ar" ? "تأكيد إنجاز الخدمة؟ سيتم تحويل المبلغ من الضمان." : "Mark this job as done? Funds will be released from escrow.")) return;
+    setCompleting(true);
+    const { error } = await (supabase.rpc as any)("complete_booking", { p_booking_id: b.id });
+    setCompleting(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(lang === "ar" ? "تم الإنجاز وتحرير المبلغ" : "Job done · funds released");
     load();
   };
 
@@ -144,7 +159,7 @@ function BookingDetail() {
         </div>
       )}
 
-      {b.status === "pending" && (
+      {(b.status === "pending" || b.status === "in_escrow") && b.customer_id === meId && (
         <div className="fixed bottom-20 left-0 right-0 px-5">
           <button
             onClick={onCancel}
@@ -154,6 +169,20 @@ function BookingDetail() {
           >
             {cancelling ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
             {lang === "ar" ? "إلغاء الحجز" : "Cancel booking"}
+          </button>
+        </div>
+      )}
+
+      {(b.status === "pending" || b.status === "in_escrow" || b.status === "confirmed") && b.pro_id === meId && (
+        <div className="fixed bottom-20 left-0 right-0 px-5">
+          <button
+            onClick={onComplete}
+            disabled={completing}
+            className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-white"
+            style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
+          >
+            {completing ? <Loader2 size={16} className="animate-spin" /> : "✓"}
+            {lang === "ar" ? "إنجاز الخدمة وتحرير المبلغ" : "Mark job done · release funds"}
           </button>
         </div>
       )}
