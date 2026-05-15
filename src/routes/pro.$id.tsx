@@ -63,8 +63,8 @@ function ProProfilePage() {
         if (svc.pro_id) {
           const [{ data: rvs }, { data: pro }] = await Promise.all([
             supabase
-              .from("reviews")
-              .select("id, rating, comment, created_at, customer_id")
+              .from("reviews_public" as any)
+              .select("id, rating, comment, created_at")
               .eq("pro_id", svc.pro_id)
               .order("created_at", { ascending: false }),
             supabase
