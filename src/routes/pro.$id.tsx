@@ -34,7 +34,6 @@ interface ReviewRow {
   rating: number | null;
   comment: string | null;
   created_at: string | null;
-  customer_id: string | null;
 }
 
 function ProProfilePage() {
