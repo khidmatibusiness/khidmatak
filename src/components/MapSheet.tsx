@@ -121,58 +121,77 @@ export function MapSheet({ open, onClose, onSelectService, filterCategory }: Pro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 animate-fade-up"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 animate-fade-up"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-md h-[92dvh] rounded-t-[28px] overflow-hidden relative"
+        className="bg-white w-full max-w-md h-[78dvh] rounded-t-[32px] relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: "var(--shadow-float)" }}
       >
-        <div className="absolute top-0 inset-x-0 z-20 px-4 pt-3 flex items-center justify-between gap-3">
+        {/* grabber */}
+        <div className="pt-2.5 pb-1 flex justify-center">
+          <div className="w-10 h-1.5 rounded-full bg-muted-foreground/25" />
+        </div>
+
+        {/* header */}
+        <div className="px-4 pt-2 pb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="spring-tap glass-strong w-10 h-10 rounded-full flex items-center justify-center"
-            >
-              <X size={18} />
-            </button>
-            <div className="glass-strong rounded-full px-3.5 py-2 text-sm font-bold flex items-center gap-1.5">
-              <MapPin size={14} className="text-primary" /> Providers map
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <MapPin size={16} className="text-primary" />
+            </div>
+            <div>
+              <div className="text-[15px] font-bold leading-tight">Providers near you</div>
+              <div className="text-[11px] text-muted-foreground">
+                {pins.length} {pins.length === 1 ? "result" : "results"}
+              </div>
             </div>
           </div>
           <button
-            onClick={locateMe}
-            className="spring-tap glass-strong rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
+            onClick={onClose}
+            aria-label="Close"
+            className="spring-tap w-9 h-9 rounded-full bg-muted flex items-center justify-center"
           >
-            <Navigation size={14} className="text-primary" /> Locate me
+            <X size={16} />
           </button>
         </div>
 
-        <div className="h-full w-full bg-muted">
-          {!loading ? (
-            <Suspense
-              fallback={
-                <div className="h-full w-full flex items-center justify-center">
-                  <Loader2 className="animate-spin text-primary" />
-                </div>
-              }
+        {/* map card */}
+        <div className="flex-1 px-3 pb-3 min-h-0">
+          <div
+            className="relative h-full w-full rounded-[24px] overflow-hidden bg-muted border border-border"
+            style={{ boxShadow: "var(--shadow-elegant)" }}
+          >
+            <button
+              onClick={locateMe}
+              className="spring-tap absolute top-3 right-3 z-[1000] glass-strong rounded-full px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
             >
-              <LeafletMap
-                center={CENTER}
-                pins={pins}
-                selectedId={selectedId}
-                flyTo={meTo}
-                onSelect={(id) => setSelectedId(id)}
-                onBook={(id) => onSelectService?.(id)}
-              />
-            </Suspense>
-          ) : (
-            <div className="h-full w-full flex items-center justify-center">
-              <Loader2 className="animate-spin text-primary" />
-            </div>
-          )}
+              <Navigation size={12} className="text-primary" /> Locate me
+            </button>
+
+            {!loading ? (
+              <Suspense
+                fallback={
+                  <div className="h-full w-full flex items-center justify-center">
+                    <Loader2 className="animate-spin text-primary" />
+                  </div>
+                }
+              >
+                <LeafletMap
+                  center={CENTER}
+                  pins={pins}
+                  selectedId={selectedId}
+                  flyTo={meTo}
+                  onSelect={(id) => setSelectedId(id)}
+                  onBook={(id) => onSelectService?.(id)}
+                />
+              </Suspense>
+            ) : (
+              <div className="h-full w-full flex items-center justify-center">
+                <Loader2 className="animate-spin text-primary" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
