@@ -26,7 +26,7 @@ interface BookingRow {
   scheduled_at: string | null;
   created_at: string | null;
   total_amount: number;
-  payment_method: string;
+  payment_method: string | null;
   service_id: string | null;
   pro_id: string | null;
   service?: { name_en: string | null; name_ar: string | null } | null;

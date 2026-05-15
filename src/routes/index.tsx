@@ -59,6 +59,9 @@ function HomePage() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<NearbyService[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
@@ -103,6 +106,43 @@ function HomePage() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // Live search against Supabase
+  useEffect(() => {
+    const term = query.trim();
+    if (!term) {
+      setSearchResults([]);
+      setSearchOpen(false);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    setSearchOpen(true);
+    const handle = setTimeout(async () => {
+      const escaped = term.replace(/[%,]/g, " ");
+      const { data: svc } = await supabase
+        .from("services")
+        .select("id, name_en, name_ar, category, subcategory, price, pro_id")
+        .eq("is_active", true)
+        .or(`name_en.ilike.%${escaped}%,name_ar.ilike.%${escaped}%,subcategory.ilike.%${escaped}%,category.ilike.%${escaped}%`)
+        .limit(15);
+      const list = (svc ?? []) as Array<Omit<NearbyService, "pro_name">>;
+      const proIds = Array.from(new Set(list.map((s) => s.pro_id).filter(Boolean) as string[]));
+      const proMap: Record<string, string> = {};
+      if (proIds.length) {
+        const { data: pros } = await supabase
+          .from("users").select("id, full_name").in("id", proIds);
+        for (const p of (pros ?? []) as Array<{ id: string; full_name: string | null }>) {
+          if (p.full_name) proMap[p.id] = p.full_name;
+        }
+      }
+      setSearchResults(
+        list.map((s) => ({ ...s, pro_name: (s.pro_id && proMap[s.pro_id]) || s.name_en })),
+      );
+      setSearchLoading(false);
+    }, 200);
+    return () => clearTimeout(handle);
+  }, [query]);
 
   const toggleFav = (id: string) => setFavs(new Set(toggleFavStore(id)));
 
@@ -180,6 +220,7 @@ function HomePage() {
       </div>
 
       {/* search + Ask AI */}
+      <div className="relative">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -190,9 +231,21 @@ function HomePage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => { if (query.trim()) setSearchOpen(true); }}
+          onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
           placeholder={t("searchPlaceholder")}
           className="bg-transparent outline-none flex-1 text-sm placeholder:text-muted-foreground py-2 min-w-0"
         />
+        {query && (
+          <button
+            type="button"
+            onClick={() => { setQuery(""); setSearchResults([]); setSearchOpen(false); }}
+            aria-label="Clear"
+            className="shrink-0 text-muted-foreground p-1"
+          >
+            <X size={16} />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -209,6 +262,57 @@ function HomePage() {
           Ask AI
         </button>
       </form>
+      {searchOpen && query.trim() && (
+        <div
+          className="absolute left-0 right-0 top-full mt-2 z-40 bg-white rounded-2xl border border-border max-h-80 overflow-y-auto"
+          style={{ boxShadow: "var(--shadow-float)" }}
+        >
+          {searchLoading ? (
+            <div className="py-6 flex justify-center">
+              <Loader2 className="animate-spin text-primary" size={18} />
+            </div>
+          ) : searchResults.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              {lang === "ar" ? "لا توجد نتائج" : "No results"}
+            </div>
+          ) : (
+            <ul className="py-1">
+              {searchResults.map((s) => {
+                const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
+                const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
+                return (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setSearchOpen(false);
+                        navigate({ to: "/book/$serviceId", params: { serviceId: s.id } });
+                      }}
+                      className="w-full text-start flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                        style={{ background: "var(--color-primary-tint)" }}
+                      >
+                        {emoji}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm truncate">{displayName}</div>
+                        <div className="text-[11px] text-muted-foreground truncate capitalize">
+                          {s.pro_name} · {s.category ?? "service"}
+                        </div>
+                      </div>
+                      <div className="text-sm font-bold text-primary shrink-0">{Number(s.price).toFixed(0)} JOD</div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+      </div>
 
       {/* Categories */}
       <section className="space-y-3">
