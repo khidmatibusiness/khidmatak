@@ -107,6 +107,43 @@ function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
+  // Live search against Supabase
+  useEffect(() => {
+    const term = query.trim();
+    if (!term) {
+      setSearchResults([]);
+      setSearchOpen(false);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    setSearchOpen(true);
+    const handle = setTimeout(async () => {
+      const escaped = term.replace(/[%,]/g, " ");
+      const { data: svc } = await supabase
+        .from("services")
+        .select("id, name_en, name_ar, category, subcategory, price, pro_id")
+        .eq("is_active", true)
+        .or(`name_en.ilike.%${escaped}%,name_ar.ilike.%${escaped}%,subcategory.ilike.%${escaped}%,category.ilike.%${escaped}%`)
+        .limit(15);
+      const list = (svc ?? []) as Array<Omit<NearbyService, "pro_name">>;
+      const proIds = Array.from(new Set(list.map((s) => s.pro_id).filter(Boolean) as string[]));
+      const proMap: Record<string, string> = {};
+      if (proIds.length) {
+        const { data: pros } = await supabase
+          .from("users").select("id, full_name").in("id", proIds);
+        for (const p of (pros ?? []) as Array<{ id: string; full_name: string | null }>) {
+          if (p.full_name) proMap[p.id] = p.full_name;
+        }
+      }
+      setSearchResults(
+        list.map((s) => ({ ...s, pro_name: (s.pro_id && proMap[s.pro_id]) || s.name_en })),
+      );
+      setSearchLoading(false);
+    }, 200);
+    return () => clearTimeout(handle);
+  }, [query]);
+
   const toggleFav = (id: string) => setFavs(new Set(toggleFavStore(id)));
 
   const q = query.trim().toLowerCase();
