@@ -140,7 +140,7 @@ function SettingsPage() {
       if (key === "language") setLang(value as "en" | "ar");
       return next;
     });
-    haptic("selection");
+    haptic("light");
   };
 
   const updateNotif = (k: keyof Prefs["notif"], v: boolean) => {
@@ -149,7 +149,7 @@ function SettingsPage() {
       savePrefs(next);
       return next;
     });
-    haptic("selection");
+    haptic("light");
   };
 
   const validateProfile = () => {
