@@ -34,7 +34,6 @@ interface ReviewRow {
   rating: number | null;
   comment: string | null;
   created_at: string | null;
-  customer_id: string | null;
 }
 
 function ProProfilePage() {
@@ -64,8 +63,8 @@ function ProProfilePage() {
         if (svc.pro_id) {
           const [{ data: rvs }, { data: pro }] = await Promise.all([
             supabase
-              .from("reviews")
-              .select("id, rating, comment, created_at, customer_id")
+              .from("reviews_public" as any)
+              .select("id, rating, comment, created_at")
               .eq("pro_id", svc.pro_id)
               .order("created_at", { ascending: false }),
             supabase
@@ -75,7 +74,7 @@ function ProProfilePage() {
               .maybeSingle(),
           ]);
           if (cancelled) return;
-          setReviews((rvs ?? []) as ReviewRow[]);
+          setReviews(((rvs ?? []) as unknown) as ReviewRow[]);
           setProName(pro?.full_name ?? svc.name_en);
         } else {
           setProName(svc.name_en);
@@ -200,7 +199,7 @@ function ProProfilePage() {
             </div>
           )}
           {reviews.map((r) => {
-            const name = r.customer_id ? `Customer ${r.customer_id.slice(0, 4).toUpperCase()}` : "Customer";
+            const name = "Customer";
             return (
               <div key={r.id} className="glass rounded-2xl p-4">
                 <div className="flex items-center justify-between">
