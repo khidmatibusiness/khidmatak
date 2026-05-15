@@ -1,5 +1,4 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { X, MapPin, Loader2, Navigation, Star, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,6 +7,7 @@ const LeafletMap = lazy(() => import("@/components/LeafletMap"));
 interface Props {
   open: boolean;
   onClose: () => void;
+  onSelectService?: (serviceId: string) => void;
 }
 
 interface PinService {
@@ -41,7 +41,7 @@ function seedFromId(id: string) {
   return Math.abs(h);
 }
 
-export function MapSheet({ open, onClose }: Props) {
+export function MapSheet({ open, onClose, onSelectService }: Props) {
   const [pins, setPins] = useState<PinService[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -154,7 +154,10 @@ export function MapSheet({ open, onClose }: Props) {
                 pins={pins}
                 selectedId={selectedId}
                 flyTo={meTo}
-                onSelect={setSelectedId}
+                onSelect={(id) => {
+                  setSelectedId(id);
+                  if (onSelectService) onSelectService(id);
+                }}
               />
             </Suspense>
           ) : (
@@ -166,11 +169,10 @@ export function MapSheet({ open, onClose }: Props) {
 
         {selected && (
           <div className="absolute left-0 right-0 bottom-0 z-20 px-4 pb-5">
-            <Link
-              to="/pro/$id"
-              params={{ id: selected.id }}
-              onClick={onClose}
-              className="spring-tap block bg-white rounded-3xl p-4 border border-border animate-fade-up"
+            <button
+              type="button"
+              onClick={() => onSelectService?.(selected.id)}
+              className="spring-tap block w-full text-start bg-white rounded-3xl p-4 border border-border animate-fade-up"
               style={{ boxShadow: "var(--shadow-float)" }}
             >
               <div className="flex items-center gap-3">
@@ -197,11 +199,11 @@ export function MapSheet({ open, onClose }: Props) {
                 <div className="text-right shrink-0">
                   <div className="font-bold text-primary">{selected.price.toFixed(0)} JOD</div>
                   <div className="text-[11px] mt-1 px-3 py-1 rounded-full text-white" style={{ background: "var(--gradient-primary)" }}>
-                    Book
+                    View
                   </div>
                 </div>
               </div>
-            </Link>
+            </button>
           </div>
         )}
       </div>
