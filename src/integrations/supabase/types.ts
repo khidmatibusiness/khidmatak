@@ -21,10 +21,10 @@ export type Database = {
           customer_id: string | null
           id: string
           notes: string | null
-          payment_method: string
+          payment_method: string | null
           pro_id: string | null
           reviewed_at: string | null
-          reviewed_skipped: boolean
+          reviewed_skipped: boolean | null
           scheduled_at: string | null
           service_id: string | null
           status: string | null
@@ -36,10 +36,10 @@ export type Database = {
           customer_id?: string | null
           id?: string
           notes?: string | null
-          payment_method?: string
+          payment_method?: string | null
           pro_id?: string | null
           reviewed_at?: string | null
-          reviewed_skipped?: boolean
+          reviewed_skipped?: boolean | null
           scheduled_at?: string | null
           service_id?: string | null
           status?: string | null
@@ -51,10 +51,10 @@ export type Database = {
           customer_id?: string | null
           id?: string
           notes?: string | null
-          payment_method?: string
+          payment_method?: string | null
           pro_id?: string | null
           reviewed_at?: string | null
-          reviewed_skipped?: boolean
+          reviewed_skipped?: boolean | null
           scheduled_at?: string | null
           service_id?: string | null
           status?: string | null
@@ -152,13 +152,6 @@ export type Database = {
           rating?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "reviews_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "reviews_customer_id_fkey"
             columns: ["customer_id"]
@@ -437,7 +430,7 @@ export type Database = {
       }
       process_split_send: {
         Args: { p_amount: number; p_recipient_code: string }
-        Returns: Json
+        Returns: undefined
       }
       redeem_referral: { Args: { p_code: string }; Returns: Json }
     }

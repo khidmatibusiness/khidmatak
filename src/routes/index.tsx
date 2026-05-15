@@ -59,6 +59,9 @@ function HomePage() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<NearbyService[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
