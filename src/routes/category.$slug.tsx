@@ -72,6 +72,8 @@ function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [activeSub, setActiveSub] = useState<string>("");
   const [query, setQuery] = useState("");
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [mapOpen, setMapOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
