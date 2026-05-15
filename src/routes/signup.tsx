@@ -57,7 +57,7 @@ function SignupPage() {
 
       if (data.session) {
         if (referral.trim()) {
-          const { error: refErr } = await supabase.rpc("redeem_referral", { p_code: referral.trim() });
+          const { error: refErr } = await supabase.rpc("apply_referral" as any, { p_referral_code: referral.trim() } as any);
           if (refErr) toast.error(`Referral: ${refErr.message}`);
           else toast.success("Referral applied · +2 JOD added to your wallet");
         }
