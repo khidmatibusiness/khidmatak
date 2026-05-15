@@ -273,6 +273,15 @@ function CategoryPage() {
           )}
         </div>
       )}
+
+      <MapSheet
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        filterCategory={slug}
+        onSelectService={(id) => { setMapOpen(false); setProfileId(id); }}
+      />
+      <ProProfileSheet serviceId={profileId} open={!!profileId} onClose={() => setProfileId(null)} />
     </div>
   );
 }
+
