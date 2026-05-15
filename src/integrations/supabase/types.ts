@@ -409,6 +409,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_referral: { Args: { p_referral_code: string }; Returns: undefined }
       cancel_booking: { Args: { p_booking_id: string }; Returns: Json }
       confirm_booking_payment: {
         Args: { p_booking_id: string }
