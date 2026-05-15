@@ -213,6 +213,7 @@ function CategoryPage() {
           )}
         </div>
         <button
+          onClick={() => setMapOpen(true)}
           className="spring-tap rounded-full px-3.5 py-1.5 text-sm font-medium flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
         >
