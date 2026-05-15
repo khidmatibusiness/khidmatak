@@ -19,7 +19,7 @@ interface Detail {
   scheduled_at: string | null;
   created_at: string | null;
   total_amount: number;
-  payment_method: string;
+  payment_method: string | null;
   notes: string | null;
   service_id: string | null;
   pro_id: string | null;

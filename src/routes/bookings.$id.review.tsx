@@ -16,7 +16,7 @@ interface BookingInfo {
   pro_id: string | null;
   status: string | null;
   reviewed_at: string | null;
-  reviewed_skipped: boolean;
+  reviewed_skipped: boolean | null;
   pro_name: string | null;
 }
 
