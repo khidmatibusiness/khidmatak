@@ -159,7 +159,7 @@ function BookingDetail() {
         </div>
       )}
 
-      {b.status === "pending" && (
+      {(b.status === "pending" || b.status === "in_escrow") && b.customer_id === meId && (
         <div className="fixed bottom-20 left-0 right-0 px-5">
           <button
             onClick={onCancel}
@@ -169,6 +169,20 @@ function BookingDetail() {
           >
             {cancelling ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
             {lang === "ar" ? "إلغاء الحجز" : "Cancel booking"}
+          </button>
+        </div>
+      )}
+
+      {(b.status === "pending" || b.status === "in_escrow" || b.status === "confirmed") && b.pro_id === meId && (
+        <div className="fixed bottom-20 left-0 right-0 px-5">
+          <button
+            onClick={onComplete}
+            disabled={completing}
+            className="spring-tap w-full rounded-2xl py-3.5 text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-white"
+            style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
+          >
+            {completing ? <Loader2 size={16} className="animate-spin" /> : "✓"}
+            {lang === "ar" ? "إنجاز الخدمة وتحرير المبلغ" : "Mark job done · release funds"}
           </button>
         </div>
       )}
