@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { SosSheet } from "@/components/SosSheet";
 import { MapSheet } from "@/components/MapSheet";
+import { ProProfileSheet } from "@/components/ProProfileSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getFavs, toggleFav as toggleFavStore } from "@/lib/favs";
@@ -65,6 +66,7 @@ function HomePage() {
   const [sosOpen, setSosOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(true);
@@ -287,7 +289,7 @@ function HomePage() {
                       onMouseDown={(e) => {
                         e.preventDefault();
                         setSearchOpen(false);
-                        navigate({ to: "/book/$serviceId", params: { serviceId: s.id } });
+                        setProfileId(s.id);
                       }}
                       className="w-full text-start flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50"
                     >
@@ -380,10 +382,10 @@ function HomePage() {
               const tint = (s.category && CATEGORY_TINT[s.category]) || "oklch(0.97 0.025 158)";
               const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
               return (
-                <Link
+                <button
                   key={s.id}
-                  to="/pro/$id"
-                  params={{ id: s.id }}
+                  type="button"
+                  onClick={() => setProfileId(s.id)}
                   className="spring-tap shrink-0 w-44 snap-start rounded-3xl bg-white p-3 border border-border text-start"
                   style={{ boxShadow: "var(--shadow-soft)" }}
                 >
@@ -408,7 +410,7 @@ function HomePage() {
                     <span className="truncate">{displayName}</span>
                   </div>
                   <div className="text-xs font-semibold text-primary mt-1.5">{Number(s.price).toFixed(0)} JOD</div>
-                </Link>
+                </button>
               );
             })}
           </div>
@@ -439,7 +441,8 @@ function HomePage() {
 
       {/* SOS sheet (pop-out) */}
       <SosSheet open={sosOpen} onClose={() => setSosOpen(false)} />
-      <MapSheet open={mapOpen} onClose={() => setMapOpen(false)} />
+      <MapSheet open={mapOpen} onClose={() => setMapOpen(false)} onSelectService={(id) => { setMapOpen(false); setProfileId(id); }} />
+      <ProProfileSheet serviceId={profileId} open={!!profileId} onClose={() => setProfileId(null)} />
 
       {/* Ask AI suggestions sheet */}
       {aiOpen && (
@@ -488,12 +491,11 @@ function HomePage() {
                 const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
                 const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
                 return (
-                  <Link
+                  <button
                     key={s.id}
-                    to="/pro/$id"
-                    params={{ id: s.id }}
-                    onClick={() => setAiOpen(false)}
-                    className="spring-tap glass rounded-2xl p-3 flex items-center gap-3"
+                    type="button"
+                    onClick={() => { setAiOpen(false); setProfileId(s.id); }}
+                    className="spring-tap glass rounded-2xl p-3 flex items-center gap-3 w-full text-start"
                   >
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
@@ -508,7 +510,7 @@ function HomePage() {
                       </div>
                     </div>
                     <div className="text-sm font-bold text-primary shrink-0">{Number(s.price).toFixed(0)} JOD</div>
-                  </Link>
+                  </button>
                 );
               })}
               {nearby.length === 0 && (
