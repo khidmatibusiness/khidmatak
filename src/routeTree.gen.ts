@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MyReviewsRouteImport } from './routes/my-reviews'
@@ -40,6 +41,11 @@ const WalletRoute = WalletRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/my-reviews': typeof MyReviewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/my-reviews': typeof MyReviewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/my-reviews': typeof MyReviewsRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/wallet': typeof WalletRoute
   '/welcome': typeof WelcomeRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/my-reviews'
     | '/profile'
     | '/reset-password'
+    | '/settings'
     | '/signup'
     | '/wallet'
     | '/welcome'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/my-reviews'
     | '/profile'
     | '/reset-password'
+    | '/settings'
     | '/signup'
     | '/wallet'
     | '/welcome'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/my-reviews'
     | '/profile'
     | '/reset-password'
+    | '/settings'
     | '/signup'
     | '/wallet'
     | '/welcome'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   MyReviewsRoute: typeof MyReviewsRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   WalletRoute: typeof WalletRoute
   WelcomeRoute: typeof WelcomeRoute
@@ -270,6 +283,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyReviewsRoute: MyReviewsRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   WalletRoute: WalletRoute,
   WelcomeRoute: WelcomeRoute,
