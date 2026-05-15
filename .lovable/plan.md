@@ -1,23 +1,22 @@
-## Goal
-Turn the map screen into a bottom-sheet popup (like the SOS sheet), opened from the home page, instead of navigating to `/map`.
+## Problem
 
-## Changes
+The `bookings` table has RLS enabled but no policies, so all inserts/selects/updates are denied. Your `rls_auto_enable` event trigger turns on RLS for every new table automatically — but policies were never added for `bookings`.
 
-1. **New `src/components/MapSheet.tsx`** (based on existing `src/routes/map.tsx`)
-   - Props: `{ open: boolean; onClose: () => void }`.
-   - Full-screen overlay with the same look as `SosSheet` (dark backdrop + slide-up panel, rounded top, `glass-strong` chrome).
-   - Inside: header with back/close button + "Providers map" pill + "Locate me" button (same as today), the Leaflet map (~62vh) lazy-loaded with the existing `LeafletMap` component, and the bottom selected-provider card.
-   - Tapping the provider card still navigates to `/pro/$id` and closes the sheet.
-   - Lazy-load `LeafletMap` only when `open` is true so the map JS isn't fetched until the user taps the button.
+## Fix
 
-2. **`src/routes/index.tsx`**
-   - Replace the `<Link to="/map">View on map</Link>` button with a regular `<button>` that opens the new `MapSheet` (local `useState`).
-   - Import and render `<MapSheet open={...} onClose={...} />` at the page root.
+Add RLS policies on `public.bookings` via a migration:
 
-3. **Delete `src/routes/map.tsx`**
-   - Removes the standalone route. `routeTree.gen.ts` regenerates automatically.
+- **SELECT** — customer or pro on the booking can view it
+  `customer_id = auth.uid() OR pro_id = auth.uid()`
+- **INSERT** — authenticated user can create a booking only as themselves
+  `customer_id = auth.uid()`
+- **UPDATE** — customer or pro on the booking can update it (needed for status changes, review flags, cancellation paths that don't go through `cancel_booking` RPC)
+  `customer_id = auth.uid() OR pro_id = auth.uid()`
 
-## Notes
-- No backend, schema, or AI changes.
-- Reuses the existing `LeafletMap` component as-is.
-- Pattern mirrors `SosSheet` for consistency (animation, close behavior, z-index).
+No DELETE policy (bookings shouldn't be hard-deleted; cancellation flips status).
+
+The existing `confirm_booking_payment` and `cancel_booking` functions are `SECURITY DEFINER`, so they already bypass RLS — no changes needed there.
+
+## No code changes
+
+The `book.$serviceId.tsx` insert is already correct (passes `customer_id: userId` matching `auth.uid()`). This is purely a database fix.
