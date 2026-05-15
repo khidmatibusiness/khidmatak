@@ -33,19 +33,22 @@ interface BookingRow {
   pro?: { full_name: string | null } | null;
 }
 
-const UPCOMING = ["pending", "confirmed", "in_progress"];
-const PAST = ["done", "cancelled"];
+const UPCOMING = ["pending", "in_escrow", "confirmed", "in_progress"];
+const PAST = ["done", "completed", "cancelled"];
 
 export function statusStyle(status: string | null | undefined) {
   switch (status) {
     case "pending":
       return { label: "Pending", bg: "oklch(0.92 0.13 90)", fg: "oklch(0.32 0.12 80)" };
+    case "in_escrow":
+      return { label: "In escrow", bg: "oklch(0.92 0.10 280)", fg: "oklch(0.36 0.16 285)" };
     case "confirmed":
       return { label: "Confirmed", bg: "oklch(0.92 0.08 240)", fg: "oklch(0.32 0.15 245)" };
     case "in_progress":
       return { label: "In progress", bg: "oklch(0.92 0.13 55)", fg: "oklch(0.40 0.18 50)" };
     case "done":
-      return { label: "Done", bg: "oklch(0.92 0.13 155)", fg: "oklch(0.36 0.14 155)" };
+    case "completed":
+      return { label: "Completed", bg: "oklch(0.92 0.13 155)", fg: "oklch(0.36 0.14 155)" };
     case "cancelled":
       return { label: "Cancelled", bg: "oklch(0.93 0.08 25)", fg: "oklch(0.40 0.18 25)" };
     default:
