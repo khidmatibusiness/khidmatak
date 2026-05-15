@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Search, MapPin, Star, ShieldCheck, ChevronRight, Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { ProProfileSheet } from "@/components/ProProfileSheet";
+import { MapSheet } from "@/components/MapSheet";
 
 export const Route = createFileRoute("/category/$slug")({
   head: ({ params }) => ({
@@ -70,6 +72,8 @@ function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [activeSub, setActiveSub] = useState<string>("");
   const [query, setQuery] = useState("");
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [mapOpen, setMapOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -209,6 +213,7 @@ function CategoryPage() {
           )}
         </div>
         <button
+          onClick={() => setMapOpen(true)}
           className="spring-tap rounded-full px-3.5 py-1.5 text-sm font-medium flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
         >
@@ -227,10 +232,10 @@ function CategoryPage() {
             const proName = (s.pro_id && pros[s.pro_id]?.full_name) || s.name_en;
             const m = s.subcategory ? subMeta(s.subcategory) : { emoji: "✨", unit: "" };
             return (
-              <Link
+              <button
                 key={s.id}
-                to="/pro/$id"
-                params={{ id: s.id }}
+                type="button"
+                onClick={() => setProfileId(s.id)}
                 className="spring-tap w-full glass rounded-3xl p-3 flex items-center gap-3 text-start"
               >
                 <div
@@ -258,7 +263,7 @@ function CategoryPage() {
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-muted-foreground rtl:rotate-180" />
-              </Link>
+              </button>
             );
           })}
           {filtered.length === 0 && (
@@ -268,6 +273,15 @@ function CategoryPage() {
           )}
         </div>
       )}
+
+      <MapSheet
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        filterCategory={slug}
+        onSelectService={(id) => { setMapOpen(false); setProfileId(id); }}
+      />
+      <ProProfileSheet serviceId={profileId} open={!!profileId} onClose={() => setProfileId(null)} />
     </div>
   );
 }
+
