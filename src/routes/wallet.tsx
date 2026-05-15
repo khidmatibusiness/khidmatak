@@ -131,12 +131,20 @@ function WalletPage() {
   const balance = wallet?.balance ?? 0;
   const piggy = wallet?.piggy_balance ?? 0;
 
+  const formattedCode = wallet?.wallet_code
+    ? `KHD-${wallet.wallet_code.match(/.{1,4}/g)?.join("-") ?? wallet.wallet_code}`
+    : null;
+
   const copyCode = async () => {
-    if (!wallet?.wallet_code) return;
-    await navigator.clipboard.writeText(wallet.wallet_code);
+    if (!formattedCode) return;
+    await navigator.clipboard.writeText(formattedCode);
     haptic("light");
     toast.success(lang === "ar" ? "تم النسخ" : "Code copied");
   };
+
+  // round-up savings goal (visual only — 10 JOD)
+  const piggyGoal = 10;
+  const piggyPct = Math.min(100, Math.round((piggy / piggyGoal) * 100));
 
   return (
     <>
@@ -145,65 +153,93 @@ function WalletPage() {
 
         {/* balance card */}
         <div
-          className="rounded-3xl p-5 text-white relative overflow-hidden"
+          className="rounded-[2rem] p-6 text-white relative overflow-hidden"
           style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-float)" }}
         >
-          <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/15" />
-          <div className="absolute -left-6 -bottom-12 w-40 h-40 rounded-full bg-white/10" />
+          <div className="absolute -right-12 -top-16 w-56 h-56 rounded-full bg-white/15" />
+          <div className="absolute -left-10 -bottom-20 w-52 h-52 rounded-full bg-white/10" />
           <div className="relative">
-            <div className="text-xs opacity-90">{t("balance")}</div>
-            <div className="text-4xl font-bold tracking-tight mt-1">
-              {balance.toFixed(2)} <span className="text-base font-medium opacity-80">JOD</span>
+            <div className="flex items-start justify-between">
+              <div className="text-[11px] uppercase tracking-[0.18em] opacity-90 font-semibold">
+                {lang === "ar" ? "رصيد المحفظة" : "Wallet balance"}
+              </div>
+              <span className="text-[11px] font-semibold bg-white/20 backdrop-blur px-2.5 py-1 rounded-full">JOD</span>
             </div>
-            <div className="mt-4 glass-strong rounded-2xl p-3 flex items-center justify-between text-foreground">
+            <div className="mt-3 flex items-end gap-3">
+              <div className="text-5xl font-bold tracking-tight leading-none">
+                {showCode ? balance.toFixed(2) : "•••.••"}
+              </div>
+              <button
+                onClick={() => setShowCode((v) => !v)}
+                className="spring-tap pb-1 opacity-90"
+                aria-label={showCode ? "Hide" : "Show"}
+              >
+                {showCode ? <Eye size={20} /> : <EyeOff size={20} />}
+              </button>
+            </div>
+
+            <div className="mt-5 rounded-2xl px-4 py-3 flex items-center justify-between bg-white/15 backdrop-blur border border-white/20">
               <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t("privateCode")}</div>
-                <div className="font-mono text-sm font-semibold truncate">
-                  {showCode ? (wallet?.wallet_code ?? "—") : "•••• •••• ••••"}
+                <div className="text-[10px] uppercase tracking-[0.18em] opacity-80 font-semibold">
+                  {lang === "ar" ? "رمز خاص" : "Private code"}
+                </div>
+                <div className="font-mono text-base font-bold tracking-wider truncate">
+                  {formattedCode ?? "—"}
                 </div>
               </div>
-              <div className="flex items-center gap-1">
-                <button onClick={copyCode} className="spring-tap p-2 rounded-xl bg-primary-tint text-primary" aria-label="Copy">
-                  <Copy size={16} />
-                </button>
-                <button onClick={() => setShowCode((v) => !v)} className="spring-tap p-2 rounded-xl bg-primary-tint text-primary" aria-label={showCode ? "Hide" : "Show"}>
-                  {showCode ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+              <button onClick={copyCode} className="spring-tap p-2.5 rounded-xl bg-white/20 hover:bg-white/30 shrink-0" aria-label="Copy">
+                <Copy size={16} />
+              </button>
             </div>
           </div>
         </div>
 
-        {/* piggy bank */}
+        {/* actions — 3 tiles */}
+        <div className="grid grid-cols-3 gap-3">
+          <BigActionTile icon={<Plus size={22} />} label={t("topUp") as string} onClick={() => setSheet("topup")} />
+          <BigActionTile icon={<Send size={22} />} label={lang === "ar" ? "تحويل" : "Transfer"} onClick={() => setSheet("send")} />
+          <BigActionTile icon={<Users size={22} />} label={lang === "ar" ? "تقسيم" : "Split"} onClick={() => setSheet("groups")} />
+        </div>
+
+        {/* round-up savings */}
         <button
           onClick={() => { haptic("light"); setSheet("piggy"); }}
-          className="spring-tap w-full glass rounded-3xl p-4 flex items-center gap-4 text-start"
+          className="spring-tap w-full glass rounded-3xl p-4 text-start"
         >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0"
-            style={{ background: "linear-gradient(135deg, oklch(0.78 0.16 350), oklch(0.7 0.18 25))" }}>
-            <PiggyBank size={22} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{lang === "ar" ? "حصالة" : "Piggy bank"}</div>
-            <div className="font-bold text-lg leading-tight">{piggy.toFixed(2)} <span className="text-xs font-medium text-muted-foreground">JOD</span></div>
-            <div className="text-[11px] text-muted-foreground">
-              {wallet?.roundup_enabled
-                ? (wallet.roundup_mode === "donate"
-                  ? (lang === "ar" ? "تقريب التبرع مفعّل" : "Round-up donating · ON")
-                  : (lang === "ar" ? "تقريب الادخار مفعّل" : "Round-up saving · ON"))
-                : (lang === "ar" ? "اضغط لتفعيل التقريب" : "Tap to enable round-up")}
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-primary-tint text-primary flex items-center justify-center shrink-0">
+              <PiggyBank size={20} />
             </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-[15px] leading-tight">
+                {lang === "ar" ? "مدخرات التقريب" : "Round-up savings"}
+              </div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                {piggy.toFixed(2)} JOD / {piggyGoal.toFixed(2)} JOD
+              </div>
+            </div>
+            <span
+              onClick={(e) => { e.stopPropagation(); haptic("light"); piggy > 0 ? supabase.rpc("piggy_to_wallet").then(({ error }) => { if (error) toast.error(error.message); else { toast.success(lang === "ar" ? "تم التحويل" : "Transferred"); load(); } }) : setSheet("roundup"); }}
+              className="text-[13px] font-semibold text-primary shrink-0"
+            >
+              {piggy > 0 ? (lang === "ar" ? "حوّل للمحفظة" : "Transfer to main") : (lang === "ar" ? "فعّل" : "Enable")}
+            </span>
           </div>
-          <Sparkles size={18} className="text-primary shrink-0" />
+          <div className="mt-3 h-2 rounded-full bg-primary-tint overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${piggyPct}%`, background: "var(--gradient-primary)" }}
+            />
+          </div>
         </button>
 
-        {/* actions */}
-        <div className="grid grid-cols-4 gap-2">
-          <ActionTile icon={<Plus size={18} />} label={t("topUp") as string} onClick={() => setSheet("topup")} />
-          <ActionTile icon={<Send size={18} />} label={lang === "ar" ? "إرسال" : "Send"} onClick={() => setSheet("send")} />
-          <ActionTile icon={<HandCoins size={18} />} label={lang === "ar" ? "طلب" : "Request"} onClick={() => setSheet("request")} />
-          <ActionTile icon={<Users size={18} />} label={lang === "ar" ? "تقسيم" : "Split"} onClick={() => setSheet("groups")} />
-        </div>
+        {/* request money quick action */}
+        <button
+          onClick={() => { haptic("light"); setSheet("request"); }}
+          className="spring-tap w-full glass rounded-2xl p-3 flex items-center justify-center gap-2 text-sm font-semibold text-primary"
+        >
+          <HandCoins size={16} /> {lang === "ar" ? "اطلب مالاً" : "Request money"}
+        </button>
 
         {/* pending transfers */}
         {pending.length > 0 && (
