@@ -330,14 +330,14 @@ function WalletPage() {
   );
 }
 
-function ActionTile({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+function BigActionTile({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button
       onClick={() => { haptic("light"); onClick(); }}
-      className="spring-tap glass rounded-2xl p-3 flex flex-col items-center gap-1.5"
+      className="spring-tap glass rounded-3xl p-5 flex flex-col items-center gap-2.5"
     >
-      <span className="rounded-xl bg-primary-tint text-primary p-2">{icon}</span>
-      <span className="text-[10px] font-medium">{label}</span>
+      <span className="rounded-2xl bg-primary-tint text-primary p-3">{icon}</span>
+      <span className="text-[13px] font-semibold">{label}</span>
     </button>
   );
 }
