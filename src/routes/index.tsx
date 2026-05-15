@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { SosSheet } from "@/components/SosSheet";
 import { MapSheet } from "@/components/MapSheet";
+import { ProProfileSheet } from "@/components/ProProfileSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getFavs, toggleFav as toggleFavStore } from "@/lib/favs";
@@ -65,6 +66,7 @@ function HomePage() {
   const [sosOpen, setSosOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(true);
