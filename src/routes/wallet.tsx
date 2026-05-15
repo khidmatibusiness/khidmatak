@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Plus, Send, ArrowUpRight, ArrowDownLeft, Eye, EyeOff, MessageCircle, Loader2, Receipt,
-  Users, Trash2, X, PiggyBank, HandCoins, Heart, Sparkles, Check, Copy, Clock,
+  Users, Trash2, X, PiggyBank, HandCoins, Heart, Check, Copy, Clock,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
