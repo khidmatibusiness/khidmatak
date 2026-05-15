@@ -35,6 +35,8 @@ function BookingDetail() {
   const [b, setB] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [completing, setCompleting] = useState(false);
+  const [meId, setMeId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
