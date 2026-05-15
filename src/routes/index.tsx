@@ -220,6 +220,7 @@ function HomePage() {
       </div>
 
       {/* search + Ask AI */}
+      <div className="relative">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -230,9 +231,21 @@ function HomePage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => { if (query.trim()) setSearchOpen(true); }}
+          onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
           placeholder={t("searchPlaceholder")}
           className="bg-transparent outline-none flex-1 text-sm placeholder:text-muted-foreground py-2 min-w-0"
         />
+        {query && (
+          <button
+            type="button"
+            onClick={() => { setQuery(""); setSearchResults([]); setSearchOpen(false); }}
+            aria-label="Clear"
+            className="shrink-0 text-muted-foreground p-1"
+          >
+            <X size={16} />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -249,6 +262,57 @@ function HomePage() {
           Ask AI
         </button>
       </form>
+      {searchOpen && query.trim() && (
+        <div
+          className="absolute left-0 right-0 top-full mt-2 z-40 bg-white rounded-2xl border border-border max-h-80 overflow-y-auto"
+          style={{ boxShadow: "var(--shadow-float)" }}
+        >
+          {searchLoading ? (
+            <div className="py-6 flex justify-center">
+              <Loader2 className="animate-spin text-primary" size={18} />
+            </div>
+          ) : searchResults.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              {lang === "ar" ? "لا توجد نتائج" : "No results"}
+            </div>
+          ) : (
+            <ul className="py-1">
+              {searchResults.map((s) => {
+                const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
+                const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
+                return (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setSearchOpen(false);
+                        navigate({ to: "/book/$serviceId", params: { serviceId: s.id } });
+                      }}
+                      className="w-full text-start flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                        style={{ background: "var(--color-primary-tint)" }}
+                      >
+                        {emoji}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm truncate">{displayName}</div>
+                        <div className="text-[11px] text-muted-foreground truncate capitalize">
+                          {s.pro_name} · {s.category ?? "service"}
+                        </div>
+                      </div>
+                      <div className="text-sm font-bold text-primary shrink-0">{Number(s.price).toFixed(0)} JOD</div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+      </div>
 
       {/* Categories */}
       <section className="space-y-3">
