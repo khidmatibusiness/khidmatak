@@ -232,10 +232,10 @@ function CategoryPage() {
             const proName = (s.pro_id && pros[s.pro_id]?.full_name) || s.name_en;
             const m = s.subcategory ? subMeta(s.subcategory) : { emoji: "✨", unit: "" };
             return (
-              <Link
+              <button
                 key={s.id}
-                to="/pro/$id"
-                params={{ id: s.id }}
+                type="button"
+                onClick={() => setProfileId(s.id)}
                 className="spring-tap w-full glass rounded-3xl p-3 flex items-center gap-3 text-start"
               >
                 <div
@@ -263,7 +263,7 @@ function CategoryPage() {
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-muted-foreground rtl:rotate-180" />
-              </Link>
+              </button>
             );
           })}
           {filtered.length === 0 && (
