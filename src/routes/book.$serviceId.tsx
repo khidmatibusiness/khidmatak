@@ -141,7 +141,6 @@ function BookingFlow() {
           pro_id: service.pro_id,
           customer_id: userId,
           total_amount: price,
-          commission_amount: price * 0.15,
           status: "pending",
           payment_method: payMethod,
           scheduled_at: scheduledAt ? scheduledAt.toISOString() : null,
