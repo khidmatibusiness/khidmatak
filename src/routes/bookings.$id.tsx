@@ -40,6 +40,8 @@ function BookingDetail() {
 
   const load = async () => {
     setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    setMeId(user?.id ?? null);
     const { data, error } = await supabase
       .from("bookings")
       .select("id,status,scheduled_at,created_at,total_amount,payment_method,notes,service_id,pro_id,customer_id")
@@ -59,6 +61,31 @@ function BookingDetail() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+
+  const onCancel = async () => {
+    if (!b) return;
+    if (!confirm(lang === "ar" ? "هل تريد إلغاء الحجز؟" : "Cancel this booking?")) return;
+    setCancelling(true);
+    const { data, error } = await supabase.rpc("cancel_booking", { p_booking_id: b.id });
+    setCancelling(false);
+    if (error) { toast.error(error.message); return; }
+    const refunded = (data as { refunded?: boolean } | null)?.refunded;
+    toast.success(refunded
+      ? (lang === "ar" ? "تم الإلغاء واسترداد المبلغ" : "Cancelled and wallet refunded")
+      : (lang === "ar" ? "تم إلغاء الحجز" : "Booking cancelled"));
+    load();
+  };
+
+  const onComplete = async () => {
+    if (!b) return;
+    if (!confirm(lang === "ar" ? "تأكيد إنجاز الخدمة؟ سيتم تحويل المبلغ من الضمان." : "Mark this job as done? Funds will be released from escrow.")) return;
+    setCompleting(true);
+    const { error } = await (supabase.rpc as any)("complete_booking", { p_booking_id: b.id });
+    setCompleting(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(lang === "ar" ? "تم الإنجاز وتحرير المبلغ" : "Job done · funds released");
+    load();
+  };
 
   const onCancel = async () => {
     if (!b) return;
