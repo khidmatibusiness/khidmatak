@@ -74,7 +74,7 @@ function ProProfilePage() {
               .maybeSingle(),
           ]);
           if (cancelled) return;
-          setReviews((rvs ?? []) as ReviewRow[]);
+          setReviews(((rvs ?? []) as unknown) as ReviewRow[]);
           setProName(pro?.full_name ?? svc.name_en);
         } else {
           setProName(svc.name_en);
