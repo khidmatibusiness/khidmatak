@@ -67,6 +67,7 @@ function HomePage() {
   const [sosOpen, setSosOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [aiInitial, setAiInitial] = useState<string | undefined>(undefined);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [nearby, setNearby] = useState<NearbyService[]>([]);
