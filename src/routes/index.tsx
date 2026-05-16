@@ -59,7 +59,6 @@ const categories = [
 
 function HomePage() {
   const { t, lang } = useI18n();
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<NearbyService[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
