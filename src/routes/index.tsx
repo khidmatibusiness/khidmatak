@@ -253,11 +253,8 @@ function HomePage() {
         <button
           type="button"
           onClick={() => {
-            if (query.trim()) {
-              navigate({ to: "/concierge", search: { q: query.trim() } });
-            } else {
-              setAiOpen(true);
-            }
+            setAiInitial(query.trim() || undefined);
+            setAiOpen(true);
           }}
           className="spring-tap shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold flex items-center gap-1.5"
           style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
