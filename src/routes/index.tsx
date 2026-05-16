@@ -6,6 +6,7 @@ import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { SosSheet } from "@/components/SosSheet";
 import { MapSheet } from "@/components/MapSheet";
 import { ProProfileSheet } from "@/components/ProProfileSheet";
+import { ConciergeSheet } from "@/components/ConciergeSheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getFavs, toggleFav as toggleFavStore } from "@/lib/favs";
