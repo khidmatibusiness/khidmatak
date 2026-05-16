@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Search, MapPin, Sparkles, Crown, ChevronRight, Siren, Heart, Star, Loader2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -59,6 +59,12 @@ const categories = [
 
 function HomePage() {
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (typeof window !== "undefined" && !localStorage.getItem("khidmati_launched")) {
+      navigate({ to: "/welcome", replace: true });
+    }
+  }, [navigate]);
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<NearbyService[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
