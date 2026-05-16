@@ -443,96 +443,12 @@ function HomePage() {
       <MapSheet open={mapOpen} onClose={() => setMapOpen(false)} onSelectService={(id) => { setMapOpen(false); setProfileId(id); }} />
       <ProProfileSheet serviceId={profileId} open={!!profileId} onClose={() => setProfileId(null)} />
 
-      {/* Ask AI suggestions sheet */}
-      {aiOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 animate-fade-up" onClick={() => setAiOpen(false)}>
-          <div
-            className="bg-white w-full max-w-md rounded-t-3xl p-5 pb-8 space-y-4 max-h-[85vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-            style={{ boxShadow: "var(--shadow-float)" }}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  <Sparkles size={16} />
-                </div>
-                <div>
-                  <div className="font-bold">AI suggestions</div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {query.trim() ? `Picks for "${query.trim()}"` : "Top-rated near you"}
-                  </div>
-                </div>
-              </div>
-              <button onClick={() => setAiOpen(false)} aria-label="Close" className="text-muted-foreground p-1">
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* quick chips */}
-            <div className="flex gap-2 flex-wrap">
-              {["plumber", "padel", "barber", "lab test", "AC repair"].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setQuery(s)}
-                  className="spring-tap text-xs rounded-full px-3 py-1.5 bg-primary-tint text-primary font-medium"
-                  style={{ background: "var(--color-primary-tint)", color: "var(--color-primary)" }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              {(filteredNearby.length ? filteredNearby : nearby).slice(0, 8).map((s) => {
-                const emoji = (s.subcategory && SUBCAT_EMOJI[s.subcategory]) || "✨";
-                const displayName = lang === "ar" ? (s.name_ar ?? s.name_en) : s.name_en;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => { setAiOpen(false); setProfileId(s.id); }}
-                    className="spring-tap glass rounded-2xl p-3 flex items-center gap-3 w-full text-start"
-                  >
-                    <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
-                      style={{ background: "var(--color-primary-tint)" }}
-                    >
-                      {emoji}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm truncate">{s.pro_name}</div>
-                      <div className="text-[11px] text-muted-foreground truncate capitalize">
-                        {s.category ?? "Service"} · {displayName}
-                      </div>
-                    </div>
-                    <div className="text-sm font-bold text-primary shrink-0">{Number(s.price).toFixed(0)} JOD</div>
-                  </button>
-                );
-              })}
-              {nearby.length === 0 && (
-                <div className="text-center text-sm text-muted-foreground py-6">No services available.</div>
-              )}
-              {nearby.length > 0 && filteredNearby.length === 0 && (
-                <div className="text-center text-sm text-muted-foreground py-6">No matches for this search.</div>
-              )}
-            </div>
-
-            <button
-              onClick={() => {
-                setAiOpen(false);
-                navigate({ to: "/concierge", search: query.trim() ? { q: query.trim() } : {} });
-              }}
-              className="spring-tap w-full rounded-full py-3 text-sm font-semibold text-white"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              Chat with AI Concierge instead
-            </button>
-          </div>
-        </div>
-      )}
+      {/* AI Concierge popup */}
+      <ConciergeSheet
+        open={aiOpen}
+        onClose={() => { setAiOpen(false); setAiInitial(undefined); }}
+        initialQuery={aiInitial}
+      />
     </div>
   );
 }
