@@ -35,7 +35,7 @@ export function BookingSheet({ serviceId, proName, open, onClose }: {
 }) {
   if (!open || !serviceId) return null;
   return (
-    <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-up" />
       <div
         onClick={(e) => e.stopPropagation()}
