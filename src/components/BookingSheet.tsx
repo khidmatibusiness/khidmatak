@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   X, Wallet, Banknote, Users, Check, Loader2, Clock, Calendar as CalendarIcon,
   Star, ShieldCheck, MapPin, Minus, Plus, CreditCard,
@@ -34,7 +35,9 @@ export function BookingSheet({ serviceId, proName, open, onClose }: {
   serviceId: string | null; proName: string; open: boolean; onClose: () => void;
 }) {
   if (!open || !serviceId) return null;
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-up" />
       <div
@@ -44,7 +47,8 @@ export function BookingSheet({ serviceId, proName, open, onClose }: {
       >
         <BookingFlow serviceId={serviceId} proName={proName} onClose={onClose} />
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
