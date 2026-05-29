@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Star, ShieldCheck, MapPin, Heart, Loader2, CalendarPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BookingSheet } from "@/components/BookingSheet";
@@ -94,7 +95,9 @@ export function ProProfileSheet({ serviceId, open, onClose }: {
   const ratings = reviews.map((r) => r.rating ?? 0).filter((r) => r > 0);
   const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 4.8;
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  const sheet = (
     <>
       <div className="fixed inset-0 z-[1000] flex items-end justify-center" onClick={onClose}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-up" />
@@ -222,4 +225,6 @@ export function ProProfileSheet({ serviceId, open, onClose }: {
       />
     </>
   );
+
+  return createPortal(sheet, document.body);
 }
