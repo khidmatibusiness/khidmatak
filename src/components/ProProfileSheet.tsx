@@ -96,17 +96,13 @@ export function ProProfileSheet({ serviceId, open, onClose }: {
 
   return (
     <>
-      <div className="fixed inset-0 z-[100]" onClick={onClose}>
+      <div className="fixed inset-0 z-[1000] flex items-end justify-center" onClick={onClose}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-up" />
         <div
-          className="absolute inset-x-0 top-0 flex items-end justify-center pointer-events-none"
-          style={{ bottom: "calc(env(safe-area-inset-bottom) + 5.75rem)" }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-md bg-white rounded-t-[28px] overflow-hidden animate-fade-up flex flex-col"
+          style={{ maxHeight: "calc(100dvh - 1rem)", boxShadow: "var(--shadow-float)" }}
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative pointer-events-auto w-full max-w-md bg-white rounded-t-[28px] overflow-hidden animate-fade-up flex flex-col"
-            style={{ maxHeight: "calc(100dvh - env(safe-area-inset-bottom) - 6.75rem)", boxShadow: "var(--shadow-float)" }}
-          >
           <div className="pt-2 pb-1 flex justify-center">
             <div className="w-10 h-1 rounded-full bg-muted" />
           </div>
@@ -215,7 +211,6 @@ export function ProProfileSheet({ serviceId, open, onClose }: {
               </div>
             </>
           )}
-          </div>
         </div>
       </div>
 
