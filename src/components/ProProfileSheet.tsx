@@ -96,11 +96,11 @@ export function ProProfileSheet({ serviceId, open, onClose }: {
 
   return (
     <>
-      <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center" onClick={onClose}>
+      <div className="fixed inset-0 z-[80] flex items-end justify-center" onClick={onClose}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-up" />
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full sm:max-w-md bg-white rounded-t-[28px] sm:rounded-[28px] overflow-hidden animate-fade-up flex flex-col"
+          className="relative w-full max-w-md bg-white rounded-t-[28px] overflow-hidden animate-fade-up flex flex-col"
           style={{ maxHeight: "calc(100dvh - 1rem)", boxShadow: "var(--shadow-float)" }}
         >
           <div className="pt-2 pb-1 flex justify-center">
