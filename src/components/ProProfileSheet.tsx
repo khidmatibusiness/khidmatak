@@ -45,7 +45,12 @@ export function ProProfileSheet({ serviceId, open, onClose }: {
     setFavs(new Set(getFavs()));
     const sync = () => setFavs(new Set(getFavs()));
     window.addEventListener("khidmati:favs", sync);
-    return () => window.removeEventListener("khidmati:favs", sync);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("khidmati:favs", sync);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open]);
 
   useEffect(() => {
