@@ -96,7 +96,7 @@ export function ProProfileSheet({ serviceId, open, onClose }: {
 
   return (
     <>
-      <div className="fixed inset-0 z-[80] flex items-end justify-center" onClick={onClose}>
+      <div className="fixed inset-0 z-[100] flex items-end justify-center" onClick={onClose}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-up" />
         <div
           onClick={(e) => e.stopPropagation()}
